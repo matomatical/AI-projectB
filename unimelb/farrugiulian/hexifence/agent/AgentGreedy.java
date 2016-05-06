@@ -1,9 +1,15 @@
 package unimelb.farrugiulian.hexifence.agent;
 
+
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
-import java.util.TreeSet;
+
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+
+import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
@@ -12,9 +18,9 @@ public class AgentGreedy extends Agent{
 
 	private Random rng;
 
-	private TreeSet<Edge> free;
-	private TreeSet<Edge> safe;
-	private TreeSet<Edge> sacr;
+	private QueueHashSet<Edge> free;
+	private QueueHashSet<Edge> safe;
+	private QueueHashSet<Edge> sacr;
 	
 	public AgentGreedy(){
 		long seed = System.nanoTime();
@@ -26,9 +32,12 @@ public class AgentGreedy extends Agent{
 	public int init(int n, int p){
 		int r = super.init(n, p);
 	
-		free = new TreeSet<Edge>();
-		safe = new TreeSet<Edge>(Arrays.asList(board.getEdges()));
-		sacr = new TreeSet<Edge>();
+		List<Edge> edges = Arrays.asList(board.getEdges());
+		Collections.shuffle(edges);
+		
+		free = new QueueHashSet<Edge>();
+		safe = new QueueHashSet<Edge>(edges);
+		sacr = new QueueHashSet<Edge>();
 		
 		return r;
 	}
@@ -64,22 +73,19 @@ public class AgentGreedy extends Agent{
 		// first select moves that will capture a cell
 		
 		if(free.size() > 0){
-			Edge e = free.pollFirst();
-			return e;
+			return free.remove();
 		}
 		
 		// then select moves that are safe
 		
 		if(safe.size() > 0){
-			Edge e = safe.pollFirst();
-			return e;
+			return safe.remove();
 		}
 
 		// then and only then, select a move that will lead to a small sacrifice
 		
-//		
 		Edge[] edges = board.getFreeEdges();
-//		
+
 //		// select cells that are free!
 //		
 //		for(Edge edge : edges){

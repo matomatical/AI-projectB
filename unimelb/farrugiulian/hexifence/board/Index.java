@@ -2,7 +2,7 @@ package unimelb.farrugiulian.hexifence.board;
 
 import aiproj.hexifence.Piece;
 
-public abstract class Index implements Comparable{
+public abstract class Index {
 	
 	public final int i, j;	// public immutable
 	int color;				// package access
@@ -21,15 +21,13 @@ public abstract class Index implements Comparable{
 	public boolean isEmpty(){
 		return color == Piece.EMPTY;
 	}
-	
+
 	@Override
-	public int compareTo(Object o) {
-		Index that = (Index)o;
-		
-		if(that.i != this.i){
-			return that.i - this.i;
-		} else {
-			return that.j - this.j;
-		}
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + i;
+		result = prime * result + j;
+		return result;
 	}
 }
