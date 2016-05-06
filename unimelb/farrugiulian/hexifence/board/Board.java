@@ -3,9 +3,11 @@ package unimelb.farrugiulian.hexifence.board;
 
 import java.io.PrintStream;
 
+import com.matomatical.hexifence.visual.VisualBoard;
+
 import aiproj.hexifence.Piece;
 
-public class Board{
+public class Board implements VisualBoard{
 
 	/** The dimension of the game board (also referred to as radius) */
 	public final int dimension;
@@ -296,6 +298,15 @@ public class Board{
 				}
 			}
 			out.println();
+		}
+	}
+
+	@Override
+	public int getColor(int i, int j) {
+		if(grid[i][j] != null){
+			return grid[i][j].color; 
+		} else {
+			return Piece.INVALID;
 		}
 	}
 

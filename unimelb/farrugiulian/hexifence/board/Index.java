@@ -2,7 +2,7 @@ package unimelb.farrugiulian.hexifence.board;
 
 import aiproj.hexifence.Piece;
 
-public abstract class Index {
+public abstract class Index implements Comparable{
 	
 	public final int i, j;	// public immutable
 	int color;				// package access
@@ -20,5 +20,16 @@ public abstract class Index {
 	
 	public boolean isEmpty(){
 		return color == Piece.EMPTY;
+	}
+	
+	@Override
+	public int compareTo(Object o) {
+		Index that = (Index)o;
+		
+		if(that.i != this.i){
+			return that.i - this.i;
+		} else {
+			return that.j - this.j;
+		}
 	}
 }

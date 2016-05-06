@@ -2,11 +2,14 @@ package unimelb.farrugiulian.hexifence.agent;
 
 import java.io.PrintStream;
 
+import com.matomatical.hexifence.visual.VisualBoard;
+import com.matomatical.hexifence.visual.VisualPlayer;
+
 import aiproj.hexifence.*;
 import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-public abstract class AgentBasic implements Player{
+public abstract class Agent implements VisualPlayer{
 
 	protected Board board;
 	protected int piece;
@@ -39,6 +42,8 @@ public abstract class AgentBasic implements Player{
 	// the only part of agent behavior that actually changes
 	protected abstract Edge getChoice();
 	
+	protected abstract void notify(Edge edge);
+	
 	@Override
 	public Move makeMove(){
 		
@@ -66,6 +71,7 @@ public abstract class AgentBasic implements Player{
 		
 		// place piece on board
 		choice.place(this.piece);
+		this.notify(choice);
 		
 		// and finally, return the move
 		return newMove(choice);
@@ -115,6 +121,8 @@ public abstract class AgentBasic implements Player{
 				edge.place(opponent);
 				this.yourScore += n;
 				
+				this.notify(edge);
+				
 				if(n > 0){
 					// damn, they scored, they get another turn
 					this.state = PlayerState.WAITING;
@@ -130,7 +138,7 @@ public abstract class AgentBasic implements Player{
 			return -1;
 		}
 	}
-
+	
 	@Override
 	public int getWinner() {
 		
@@ -148,13 +156,13 @@ public abstract class AgentBasic implements Player{
 			} else {
 				// the game is over
 				if(myScore > yourScore){
-					return this.piece; // i won (likely)
+					return this.piece; 		// i won (likely)
 					
 				} else if (myScore == yourScore){
-					return Piece.DEAD; // it was a tie (possible)
+					return Piece.DEAD; 		// it was a tie (possible)
 					
 				} else {
-					return this.opponent; // you won (unlikely)
+					return this.opponent; 	// you won (unlikely)
 				}
 			}
 		}
@@ -165,7 +173,7 @@ public abstract class AgentBasic implements Player{
 		board.printTo(output);
 	}
 	
-	public Board getBoard(){
+	public VisualBoard getBoard(){
 		return board;
 	}
 }

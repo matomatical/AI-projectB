@@ -1,10 +1,3 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
- *            COMP30024 Artificial Intelligence - Semester 1 2016            *
- *                   Project A - Testing the Current State                   *
- *                                                                           *
- *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
- *                  Last Modified 03/04/16 by Matt Farrugia                  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 package unimelb.farrugiulian.hexifence.agent;
 

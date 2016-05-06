@@ -4,7 +4,7 @@ import java.util.Random;
 
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-public class AgentRandom extends AgentBasic{
+public class AgentRandom extends Agent{
 
 	private Random rng;
 	
@@ -18,5 +18,10 @@ public class AgentRandom extends AgentBasic{
 	public Edge getChoice(){
 		Edge[] edges = board.getFreeEdges();
 		return edges[rng.nextInt(edges.length)];
+	}
+
+	@Override
+	protected void notify(Edge edge) {
+		// not keeping state
 	}
 }

@@ -83,5 +83,4 @@ public class Edge extends Index {
 		return (cells[0] == cell) ? cells[1] : cells[0];
 		
 	}
-	
 }

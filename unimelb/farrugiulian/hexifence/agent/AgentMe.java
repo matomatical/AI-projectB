@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-public class AgentMe extends AgentBasic{
+public class AgentMe extends Agent{
 
 	private Scanner sc = new Scanner(System.in);
 	
@@ -17,5 +17,10 @@ public class AgentMe extends AgentBasic{
 		int j = sc.nextInt();
 		
 		return board.getEdge(i, j);
+	}
+
+	@Override
+	protected void notify(Edge edge) {
+		// not tracking state
 	}
 }

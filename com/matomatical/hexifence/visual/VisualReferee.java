@@ -1,19 +1,17 @@
-package unimelb.farrugiulian.hexifence.playground;
+package com.matomatical.hexifence.visual;
 
 import aiproj.hexifence.Move;
-import aiproj.hexifence.Player;
-import unimelb.farrugiulian.hexifence.board.Board;
 
-public class Playground {
+public class VisualReferee {
 
 	Move move;
-	Player p1, p2, now, next, temp;
+	VisualPlayer p1, p2, now, next, temp;
 	int num = 1;
 	int maxMoves, numMoves = 0;
 
 	boolean playing, silence;
 	
-	public Playground(int dimension, Player p1, Player p2, boolean silence){
+	public VisualReferee(int dimension, VisualPlayer p1, VisualPlayer p2, boolean silence){
 		
 		this.p1 = p1;
 		this.p2 = p2;
@@ -27,7 +25,7 @@ public class Playground {
 		this.silence = silence;
 	}
 	
-	public void update() {
+	public VisualBoard update() {
 		
 		if(numMoves == maxMoves){
 			playing = false;
@@ -45,6 +43,7 @@ public class Playground {
 				// display the board according to this player
 				now.printBoard(System.out);
 			}
+			VisualBoard board = now.getBoard();
 			
 			// send the move to the other player
 			int result = next.opponentMove(move);
@@ -58,10 +57,10 @@ public class Playground {
 			} else {
 				// player gets another turn! no swap
 			}
+			
+			return board;
 		}
-	}
-
-	public Board getBoard() {
+		
 		return p1.getBoard();
 	}
 }

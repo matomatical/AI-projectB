@@ -1,4 +1,4 @@
-package unimelb.farrugiulian.hexifence.playground;
+package aiproj.hexifence.matt;
 
 class Options {
 	int dimension;

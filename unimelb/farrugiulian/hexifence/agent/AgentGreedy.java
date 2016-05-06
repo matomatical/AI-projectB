@@ -2,14 +2,20 @@ package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.Random;
 import java.util.Stack;
+import java.util.TreeSet;
+import java.util.Arrays;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-public class AgentGreedy extends AgentBasic{
+public class AgentGreedy extends Agent{
 
 	private Random rng;
 
+	private TreeSet<Edge> free;
+	private TreeSet<Edge> safe;
+	private TreeSet<Edge> sacr;
+	
 	public AgentGreedy(){
 		long seed = System.nanoTime();
 		rng = new Random(seed);
@@ -17,46 +23,90 @@ public class AgentGreedy extends AgentBasic{
 	}
 	
 	@Override
-	public Edge getChoice(){
+	public int init(int n, int p){
+		int r = super.init(n, p);
+	
+		free = new TreeSet<Edge>();
+		safe = new TreeSet<Edge>(Arrays.asList(board.getEdges()));
+		sacr = new TreeSet<Edge>();
 		
-		Edge[] edges = board.getFreeEdges();
+		return r;
+	}
+	
+	@Override
+	protected void notify(Edge edge) {
+		
+		boolean b = free.remove(edge) || safe.remove(edge) || sacr.remove(edge);
+		
+		for(Cell cell : edge.getCells()){
+			int n = cell.numFreeEdges();
+			if(n == 2){
+				// these edges are no longer safe!
+				for(Edge e : cell.getFreeEdges()){
+					if(safe.remove(e)){
+						sacr.add(e);
+					}
+				}
+			} else if (n == 1){
+				// these edges are no longer sacrifices, they're free!
+				for(Edge e : cell.getFreeEdges()){
+					if(sacr.remove(e)){
+						free.add(e);
+					}
+				}
+			}
+		}
+	}
+	
+	@Override
+	public Edge getChoice(){
 		
 		// first select moves that will capture a cell
 		
-		// (or two, doesn't matter if we take the ones first, we will get another turn)
-		// hmm there's room for optimisation and planning ahead here, following a pre-thought path
-		// in subsequent turns
-		// also responding to opponent moves not just validating, gives place to search for changes (could save time)
-		
-		// i guess keep state: a list of currently available cells for capture
-		// would have to keep it up to date in light of own moves and opponent moves
-		// (removing caputred cells and opening cells for capture)
-		
-		for(Edge edge : edges){
-			if(edge.numCapturableCells()>0){
-				return edge;
-			}
+		if(free.size() > 0){
+			Edge e = free.pollFirst();
+			return e;
 		}
 		
-		// then select moves that wont sacrifice a cell
+		// then select moves that are safe
 		
-		int offset = rng.nextInt(edges.length);
-		
-		for(int i = 0; i < edges.length; i++){
-			Edge edge = edges[(i + offset) % edges.length];
-			
-			boolean safe = true;
-			Cell[] cells = edge.getCells();
-			for(Cell cell : cells){
-				if(cell.numFreeEdges() == 2){
-					// this cell is not safe to capture around
-					safe = false;
-				}
-			}
-			if(safe){
-				return edge;
-			}
+		if(safe.size() > 0){
+			Edge e = safe.pollFirst();
+			return e;
 		}
+
+		// then and only then, select a move that will lead to a small sacrifice
+		
+//		
+		Edge[] edges = board.getFreeEdges();
+//		
+//		// select cells that are free!
+//		
+//		for(Edge edge : edges){
+//			if(edge.numCapturableCells()>0){
+//				return edge;
+//			}
+//		}
+//		
+//		// then select moves that wont sacrifice a cell
+//		
+//		int offset = rng.nextInt(edges.length);
+//		
+//		for(int i = 0; i < edges.length; i++){
+//			Edge edge = edges[(i + offset) % edges.length];
+//			
+//			boolean safe = true;
+//			Cell[] cells = edge.getCells();
+//			for(Cell cell : cells){
+//				if(cell.numFreeEdges() == 2){
+//					// this cell is not safe to capture around
+//					safe = false;
+//				}
+//			}
+//			if(safe){
+//				return edge;
+//			}
+//		}
 		
 		// all remaining edges represent possible sacrifices,
 		// just find the best option (least damage)
