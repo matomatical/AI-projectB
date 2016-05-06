@@ -20,6 +20,7 @@ public abstract class Agent implements VisualPlayer{
 	
 	
 	private PlayerState state;
+	private long total;
 	
 	
 	@Override
@@ -48,8 +49,8 @@ public abstract class Agent implements VisualPlayer{
 	public Move makeMove(){
 		
 		// decide on a move
-		Edge choice = this.getChoice();
-		
+		Edge choice = this.getChoice();		
+
 		// calculate score
 		int n = choice.numCapturableCells();
 		this.myScore += n;

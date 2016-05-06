@@ -1,13 +1,13 @@
 package unimelb.farrugiulian.hexifence.agent;
 
-
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import com.matomatical.util.QueueHashSet;
 
@@ -16,17 +16,11 @@ import unimelb.farrugiulian.hexifence.board.Edge;
 
 public class AgentGreedy extends Agent{
 
-	private Random rng;
-
+	private Random rng = new Random(System.nanoTime());
+	
 	private QueueHashSet<Edge> free;
 	private QueueHashSet<Edge> safe;
-	private QueueHashSet<Edge> sacr;
-	
-	public AgentGreedy(){
-		long seed = System.nanoTime();
-		rng = new Random(seed);
-		System.err.println("AgentGreedy seed: "+seed);
-	}
+	private HashMap<Edge, Integer> sacr;
 	
 	@Override
 	public int init(int n, int p){
@@ -37,7 +31,7 @@ public class AgentGreedy extends Agent{
 		
 		free = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>(edges);
-		sacr = new QueueHashSet<Edge>();
+		sacr = new HashMap<Edge, Integer>(); // um how is this gonna work
 		
 		return r;
 	}
@@ -45,21 +39,31 @@ public class AgentGreedy extends Agent{
 	@Override
 	protected void notify(Edge edge) {
 		
-		boolean b = free.remove(edge) || safe.remove(edge) || sacr.remove(edge);
+		// remove this edge from play
+		if(!free.remove(edge)) {
+			if(!safe.remove(edge)) {
+				sacr.remove(edge);
+			}
+		}
+		
+		// upate all potentially-affected edges
 		
 		for(Cell cell : edge.getCells()){
+			
 			int n = cell.numFreeEdges();
+			
 			if(n == 2){
 				// these edges are no longer safe!
 				for(Edge e : cell.getFreeEdges()){
 					if(safe.remove(e)){
-						sacr.add(e);
+						sacr.put(e, sacrificeSize(e));
 					}
 				}
+			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
 				for(Edge e : cell.getFreeEdges()){
-					if(sacr.remove(e)){
+					if(sacr.remove(e) != null){
 						free.add(e);
 					}
 				}
@@ -70,49 +74,19 @@ public class AgentGreedy extends Agent{
 	@Override
 	public Edge getChoice(){
 		
-		// first select moves that will capture a cell
-		
-		if(free.size() > 0){
-			return free.remove();
-		}
-		
-		// then select moves that are safe
-		
-		if(safe.size() > 0){
-			return safe.remove();
-		}
+	if(free.size() > 0){
+		return free.remove();
+	}
+	
+	// then select moves that are safe
+	
+	if(safe.size() > 0){
+		return safe.remove();
+	}
 
-		// then and only then, select a move that will lead to a small sacrifice
-		
-		Edge[] edges = board.getFreeEdges();
-
-//		// select cells that are free!
-//		
-//		for(Edge edge : edges){
-//			if(edge.numCapturableCells()>0){
-//				return edge;
-//			}
-//		}
-//		
-//		// then select moves that wont sacrifice a cell
-//		
-//		int offset = rng.nextInt(edges.length);
-//		
-//		for(int i = 0; i < edges.length; i++){
-//			Edge edge = edges[(i + offset) % edges.length];
-//			
-//			boolean safe = true;
-//			Cell[] cells = edge.getCells();
-//			for(Cell cell : cells){
-//				if(cell.numFreeEdges() == 2){
-//					// this cell is not safe to capture around
-//					safe = false;
-//				}
-//			}
-//			if(safe){
-//				return edge;
-//			}
-//		}
+	// then and only then, select a move that will lead to a small sacrifice
+	
+	Edge[] edges = board.getFreeEdges();
 		
 		// all remaining edges represent possible sacrifices,
 		// just find the best option (least damage)
@@ -182,3 +156,46 @@ public class AgentGreedy extends Agent{
 		return 1;
 	}
 }
+
+
+// old linear time move selection
+
+//// select cells that are free!
+//
+//for(Edge edge : edges){
+//	if(edge.numCapturableCells()>0){
+//		return edge;
+//	}
+//}
+//
+//// then select moves that wont sacrifice a cell
+//
+//int offset = rng.nextInt(edges.length);
+//
+//for(int i = 0; i < edges.length; i++){
+//	Edge edge = edges[(i + offset) % edges.length];
+//	
+//	boolean safe = true;
+//	Cell[] cells = edge.getCells();
+//	for(Cell cell : cells){
+//		if(cell.numFreeEdges() == 2){
+//			// this cell is not safe to capture around
+//			safe = false;
+//		}
+//	}
+//	if(safe){
+//		return edge;
+//	}
+//}
+
+//first select moves that will capture a cell
+
+//		if(free.size() > 0){
+//			return free.remove();
+//		}
+//		
+//		// then select moves that are safe
+//		
+//		if(safe.size() > 0){
+//			return safe.remove();
+//		}
