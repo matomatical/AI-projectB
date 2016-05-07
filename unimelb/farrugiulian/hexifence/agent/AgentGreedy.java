@@ -3,7 +3,7 @@ package unimelb.farrugiulian.hexifence.agent;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
-
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,6 +75,12 @@ public class AgentGreedy extends Agent{
 	public Edge getChoice(){
 		
 	if(free.size() > 0){
+		/*try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		return free.remove();
 	}
 	
@@ -102,7 +108,13 @@ public class AgentGreedy extends Agent{
 				bestCost = cost;
 			}
 		}
-		
+		/*System.out.println(bestCost);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		return bestEdge;
 	}
 
@@ -114,7 +126,9 @@ public class AgentGreedy extends Agent{
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			size += sacrifice(cell, stack);
+			if (cell.numFreeEdges() != 0){
+				size += sacrifice(cell, stack);
+			}
 		}
 		
 		while(!stack.isEmpty()){
