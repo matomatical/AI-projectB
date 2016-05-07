@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 
 import com.matomatical.util.QueueHashSet;
 
+import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
@@ -21,6 +22,8 @@ public class AgentGreedy extends Agent{
 	private QueueHashSet<Edge> free;
 	private QueueHashSet<Edge> safe;
 	private HashMap<Edge, Integer> sacr;
+	
+	private int locked = 0;
 	
 	@Override
 	public int init(int n, int p){
@@ -89,6 +92,12 @@ public class AgentGreedy extends Agent{
 	if(safe.size() > 0){
 		return safe.remove();
 	}
+	
+	if (locked == 0 && safe.size() == 0) {
+		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		System.out.println(color + " has " + numShortChains() + " short chains left");
+		locked = 1;
+	}
 
 	// then and only then, select a move that will lead to a small sacrifice
 	
@@ -108,14 +117,59 @@ public class AgentGreedy extends Agent{
 				bestCost = cost;
 			}
 		}
-		/*System.out.println(bestCost);
-		try {
+		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		System.out.println(color + " sacrificing chain of size " + bestCost);
+		/*try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}*/
 		return bestEdge;
+	}
+	
+	private int numShortChains() {
+		int numShortChains = 0;
+		if (safe.size() > 0){
+			return -1; // Can't count short chains until board is locked
+		}
+		Stack<Edge> stack = new Stack<Edge>();
+		// Keep taking short chains while keeping count
+		while(takeShortChain(stack) != 0) {
+			numShortChains++;
+		}
+		// Undo all moves made while testing
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return numShortChains;
+	}
+	
+	private int takeShortChain(Stack<Edge> stack) {
+		Edge[] edges = board.getFreeEdges();
+		
+		// Find the edge that sacrifices the least number of cells
+		Edge bestEdge = edges[0];
+		int bestCost = sacrificeSize(edges[0]);
+		
+		for(int i = 1; i < edges.length; i++){
+			Edge edge = edges[i];
+			int cost = sacrificeSize(edge);
+			if(cost < bestCost){
+				bestEdge = edge;
+				bestCost = cost;
+			}
+		}
+		// If this chain is short, take it and return how many cells it had 
+		if (bestCost < 3) {
+			bestEdge.place(super.opponent);
+			stack.push(bestEdge);
+			for(Cell cell : bestEdge.getCells()){
+				sacrifice(cell, stack);
+			}
+			return bestCost;
+		}
+		return 0; // No short chains left
 	}
 
 	private int sacrificeSize(Edge edge) {
