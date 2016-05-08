@@ -16,7 +16,7 @@ import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-public class AgentGreedy extends Agent{
+public class DoubleAgent extends Agent{
 
 	private Random rng = new Random(System.nanoTime());
 	
