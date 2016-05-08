@@ -100,7 +100,6 @@ public class DoubleAgent extends Agent{
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return freeScoring.remove();
@@ -113,7 +112,12 @@ public class DoubleAgent extends Agent{
 		}
 		
 		if (locked == 0 && safe.size() == 0) {
+			Stack<Edge> stack = new Stack<Edge>();
+			consumeAll(stack);
 			int numShortChains = numShortChains();
+			while(!stack.isEmpty()){
+				board.unplace(stack.pop());
+			}
 			if (numShortChains % 2 == 0) {
 				System.out.println(color + " has " + numShortChains + " short chains left and should lose");
 			} else {
@@ -133,7 +137,6 @@ public class DoubleAgent extends Agent{
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			// Double box
@@ -226,7 +229,6 @@ public class DoubleAgent extends Agent{
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return bestEdge;
@@ -277,7 +279,7 @@ public class DoubleAgent extends Agent{
 		
 		// Find the edge that sacrifices the least number of cells
 		Edge bestEdge = null;
-		int bestCost = 100000;
+		int bestCost = 10000;
 		
 		for(int i = 0; i < edges.length; i++){
 			Edge edge = edges[i];
@@ -285,14 +287,14 @@ public class DoubleAgent extends Agent{
 			if (edge.getCells()[0].numFreeEdges() > 1 && (edge.getCells().length == 1
 					|| edge.getCells()[1].numFreeEdges() > 1)){
 				int cost = sacrificeSize(edge);
-				if(cost < bestCost){
+				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
 					bestEdge = edge;
 					bestCost = cost;
 				}
 			}
 		}
 		// If this chain is short, take it and return how many cells it had 
-		if (bestCost < 3) {
+		if (bestCost < 3 || bestCost == 3 && isLoop(bestEdge)) {
 			bestEdge.place(super.opponent);
 			stack.push(bestEdge);
 			//System.out.println(bestEdge.i + "," + bestEdge.j);
@@ -322,6 +324,27 @@ public class DoubleAgent extends Agent{
 		}
 		
 		return size;
+	}
+	
+	private boolean isLoop(Edge edge) {
+		Stack<Edge> stack = new Stack<Edge>();
+		boolean isLoop = false;
+		
+		board.place(edge, super.opponent);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numFreeEdges() != 0){
+				sacrifice(cell, stack);
+			} else {
+				isLoop = true;
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return isLoop;
 	}
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
