@@ -94,7 +94,7 @@ public class AgentGreedy extends Agent{
 	@Override
 	public Edge getChoice(){
 		// Free scoring cells are always safe to take
-		// String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
 		// System.out.println(color + " has " + numShortChains() + " short chains left");
 		if (freeScoring.size() > 0) {
 			//System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
@@ -113,28 +113,14 @@ public class AgentGreedy extends Agent{
 			return safe.remove();
 		}
 		
-		/*if (locked == 0 && safe.size() == 0) {
-			String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		if (locked == 0 && safe.size() == 0) {
 			System.out.println(color + " has " + numShortChains() + " short chains left");
 			locked = 1;
-		}*/
+		}
 		
 		if(scoring.size() > 0){
-			int capturable = 0;
 			Stack<Edge> stack = new Stack<Edge>();
-			for (Edge edge : scoring){
-				if (edge.isEmpty()){
-					edge.place(super.piece);
-					stack.push(edge);
-					capturable++;
-					if (edge.getCells()[0].numFreeEdges() > 0){
-						capturable += sacrifice(edge.getCells()[0], stack);
-					}
-					if (edge.getCells().length == 2 && edge.getCells()[1].numFreeEdges() > 0){
-						capturable += sacrifice(edge.getCells()[1], stack);
-					}
-				}
-			}
+			int capturable = consumeAll(stack);
 			while(!stack.isEmpty()){
 				board.unplace(stack.pop());
 			}
@@ -146,19 +132,42 @@ public class AgentGreedy extends Agent{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			// Double box
 			if (capturable == 2) {
 				Cell[] cells = scoring.peek().getCells();
 				Cell cell;
+				// Get the cell that has the edge that can double box
 				if (cells[0].numFreeEdges() == 2) {
 					cell = cells[0];
 				} else {
 					cell = cells[1];
 				}
+				Edge paritySwitch;
+				Edge parityKeep;
+				// Figure out which edge can double box
 				if (cell.getFreeEdges()[0] == scoring.peek()){
-					return cell.getFreeEdges()[1];
+					paritySwitch = cell.getFreeEdges()[1];
+					parityKeep = cell.getFreeEdges()[0];
 				} else {
-					return cell.getFreeEdges()[0];
+					paritySwitch = cell.getFreeEdges()[0];
+					parityKeep = cell.getFreeEdges()[1];
 				}
+				// If we need to switch parity then double box
+				consumeAll(stack);
+				Edge choice;
+				int numShortChains = numShortChains();
+				System.out.print(color + " has " + numShortChains + " short chains so " + color);
+				if (numShortChains % 2 == 0) {
+					System.out.println(" is double boxing");
+					choice = paritySwitch;
+				} else {
+					System.out.println(" is not double boxing");
+					choice = parityKeep;
+				}
+				while(!stack.isEmpty()){
+					board.unplace(stack.pop());
+				}
+				return choice;
 			}
 			return scoring.remove();
 		}
@@ -180,8 +189,8 @@ public class AgentGreedy extends Agent{
 				bestCost = cost;
 			}
 		}
-		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
-		System.out.println(color + " sacrificing chain of size " + bestCost + ": " + bestEdge.i + "," + bestEdge.j);
+		//String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		System.out.println(color + " sacrificing chain of size " + bestCost);
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
@@ -189,6 +198,25 @@ public class AgentGreedy extends Agent{
 			e.printStackTrace();
 		}
 		return bestEdge;
+	}
+	
+	// Works ONLY if the scoring QueueHashSet is accurate
+	private int consumeAll(Stack<Edge> stack){
+		int capturable = 0;
+		for (Edge edge : scoring){
+			if (edge.isEmpty()){
+				edge.place(super.piece);
+				stack.push(edge);
+				capturable++;
+				if (edge.getCells()[0].numFreeEdges() > 0){
+					capturable += sacrifice(edge.getCells()[0], stack);
+				}
+				if (edge.getCells().length == 2 && edge.getCells()[1].numFreeEdges() > 0){
+					capturable += sacrifice(edge.getCells()[1], stack);
+				}
+			}
+		}
+		return capturable;
 	}
 	
 	private int numShortChains() {
