@@ -19,7 +19,8 @@ public class AgentGreedy extends Agent{
 
 	private Random rng = new Random(System.nanoTime());
 	
-	private QueueHashSet<Edge> free;
+	private QueueHashSet<Edge> freeScoring;
+	private QueueHashSet<Edge> scoring;
 	private QueueHashSet<Edge> safe;
 	private HashMap<Edge, Integer> sacr;
 	
@@ -32,7 +33,8 @@ public class AgentGreedy extends Agent{
 		List<Edge> edges = Arrays.asList(board.getEdges());
 		Collections.shuffle(edges);
 		
-		free = new QueueHashSet<Edge>();
+		freeScoring = new QueueHashSet<Edge>();
+		scoring = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>(edges);
 		sacr = new HashMap<Edge, Integer>(); // um how is this gonna work
 		
@@ -43,9 +45,11 @@ public class AgentGreedy extends Agent{
 	protected void notify(Edge edge) {
 		
 		// remove this edge from play
-		if(!free.remove(edge)) {
-			if(!safe.remove(edge)) {
-				sacr.remove(edge);
+		if (!freeScoring.remove(edge)) {
+			if(!scoring.remove(edge)) {
+				if(!safe.remove(edge)) {
+					sacr.remove(edge);
+				}
 			}
 		}
 		
@@ -56,19 +60,31 @@ public class AgentGreedy extends Agent{
 			int n = cell.numFreeEdges();
 			
 			if(n == 2){
-				// these edges are no longer safe!
 				for(Edge e : cell.getFreeEdges()){
+					// these edges are no longer safe!
 					if(safe.remove(e)){
 						sacr.put(e, sacrificeSize(e));
+					} else if (freeScoring.remove(e)) {
+						// And if they were a free scoring edge, now they result in another
+						// scoring edge
+						scoring.add(e);
 					}
 				}
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				for(Edge e : cell.getFreeEdges()){
-					if(sacr.remove(e) != null){
-						free.add(e);
+				Edge e = cell.getFreeEdges()[0];
+				if(sacr.remove(e) != null){
+					// But what type of free? It depends on whether the other cell is
+					// a sacrifice or not
+					if (e.getOtherCell(cell) != null
+							&& e.getOtherCell(cell).numFreeEdges() == 2) {
+						scoring.add(e);
+					} else {
+						freeScoring.add(e);
 					}
+				} else if (scoring.remove(e)) {
+					freeScoring.add(e);
 				}
 			}
 		}
@@ -76,32 +92,46 @@ public class AgentGreedy extends Agent{
 	
 	@Override
 	public Edge getChoice(){
-		
-	if(free.size() > 0){
-		/*try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		return free.remove();
-	}
-	
-	// then select moves that are safe
-	
-	if(safe.size() > 0){
-		return safe.remove();
-	}
-	
-	if (locked == 0 && safe.size() == 0) {
+		// Free scoring cells are always safe to take
 		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
 		System.out.println(color + " has " + numShortChains() + " short chains left");
-		locked = 1;
-	}
-
-	// then and only then, select a move that will lead to a small sacrifice
-	
-	Edge[] edges = board.getFreeEdges();
+		if (freeScoring.size() > 0) {
+			/*System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			return freeScoring.remove();
+		}
+		
+		if(scoring.size() > 0){
+			/*System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			return scoring.remove();
+		}
+		
+		// then select moves that are safe
+		
+		if(safe.size() > 0){
+			return safe.remove();
+		}
+		
+		/*if (locked == 0 && safe.size() == 0) {
+			String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+			System.out.println(color + " has " + numShortChains() + " short chains left");
+			locked = 1;
+		}*/
+		
+			// then and only then, select a move that will lead to a small sacrifice
+		
+		Edge[] edges = board.getFreeEdges();
 		
 		// all remaining edges represent possible sacrifices,
 		// just find the best option (least damage)
@@ -117,14 +147,14 @@ public class AgentGreedy extends Agent{
 				bestCost = cost;
 			}
 		}
-		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
-		System.out.println(color + " sacrificing chain of size " + bestCost);
-		/*try {
+		//String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		System.out.println(color + " sacrificing chain of size " + bestCost + ": " + bestEdge.i + "," + bestEdge.j);
+		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 		return bestEdge;
 	}
 	
@@ -148,22 +178,31 @@ public class AgentGreedy extends Agent{
 	private int takeShortChain(Stack<Edge> stack) {
 		Edge[] edges = board.getFreeEdges();
 		
-		// Find the edge that sacrifices the least number of cells
-		Edge bestEdge = edges[0];
-		int bestCost = sacrificeSize(edges[0]);
+		if (edges.length == 0) {
+			return 0;
+		}
 		
-		for(int i = 1; i < edges.length; i++){
+		// Find the edge that sacrifices the least number of cells
+		Edge bestEdge = null;
+		int bestCost = 100000;
+		
+		for(int i = 0; i < edges.length; i++){
 			Edge edge = edges[i];
-			int cost = sacrificeSize(edge);
-			if(cost < bestCost){
-				bestEdge = edge;
-				bestCost = cost;
+			// Only consider edges that don't score
+			if (edge.getCells()[0].numFreeEdges() > 1 && (edge.getCells().length == 1
+					|| edge.getCells()[1].numFreeEdges() > 1)){
+				int cost = sacrificeSize(edge);
+				if(cost < bestCost){
+					bestEdge = edge;
+					bestCost = cost;
+				}
 			}
 		}
 		// If this chain is short, take it and return how many cells it had 
 		if (bestCost < 3) {
 			bestEdge.place(super.opponent);
 			stack.push(bestEdge);
+			System.out.println(bestEdge.i + "," + bestEdge.j);
 			for(Cell cell : bestEdge.getCells()){
 				sacrifice(cell, stack);
 			}
