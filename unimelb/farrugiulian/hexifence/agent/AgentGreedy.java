@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import com.matomatical.util.QueueHashSet;
@@ -93,28 +94,17 @@ public class AgentGreedy extends Agent{
 	@Override
 	public Edge getChoice(){
 		// Free scoring cells are always safe to take
-		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
-		System.out.println(color + " has " + numShortChains() + " short chains left");
+		// String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		// System.out.println(color + " has " + numShortChains() + " short chains left");
 		if (freeScoring.size() > 0) {
-			/*System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
+			//System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}*/
+			}
 			return freeScoring.remove();
-		}
-		
-		if(scoring.size() > 0){
-			/*System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
-			return scoring.remove();
 		}
 		
 		// then select moves that are safe
@@ -129,8 +119,51 @@ public class AgentGreedy extends Agent{
 			locked = 1;
 		}*/
 		
-			// then and only then, select a move that will lead to a small sacrifice
+		if(scoring.size() > 0){
+			int capturable = 0;
+			Stack<Edge> stack = new Stack<Edge>();
+			for (Edge edge : scoring){
+				if (edge.isEmpty()){
+					edge.place(super.piece);
+					stack.push(edge);
+					capturable++;
+					if (edge.getCells()[0].numFreeEdges() > 0){
+						capturable += sacrifice(edge.getCells()[0], stack);
+					}
+					if (edge.getCells().length == 2 && edge.getCells()[1].numFreeEdges() > 0){
+						capturable += sacrifice(edge.getCells()[1], stack);
+					}
+				}
+			}
+			while(!stack.isEmpty()){
+				board.unplace(stack.pop());
+			}
+			System.out.println("Capturable cells: " + capturable);
+			//System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (capturable == 2) {
+				Cell[] cells = scoring.peek().getCells();
+				Cell cell;
+				if (cells[0].numFreeEdges() == 2) {
+					cell = cells[0];
+				} else {
+					cell = cells[1];
+				}
+				if (cell.getFreeEdges()[0] == scoring.peek()){
+					return cell.getFreeEdges()[1];
+				} else {
+					return cell.getFreeEdges()[0];
+				}
+			}
+			return scoring.remove();
+		}
 		
+		// then and only then, select a move that will lead to a small sacrifice
 		Edge[] edges = board.getFreeEdges();
 		
 		// all remaining edges represent possible sacrifices,
@@ -147,7 +180,7 @@ public class AgentGreedy extends Agent{
 				bestCost = cost;
 			}
 		}
-		//String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
 		System.out.println(color + " sacrificing chain of size " + bestCost + ": " + bestEdge.i + "," + bestEdge.j);
 		try {
 			Thread.sleep(2000);
@@ -202,7 +235,7 @@ public class AgentGreedy extends Agent{
 		if (bestCost < 3) {
 			bestEdge.place(super.opponent);
 			stack.push(bestEdge);
-			System.out.println(bestEdge.i + "," + bestEdge.j);
+			//System.out.println(bestEdge.i + "," + bestEdge.j);
 			for(Cell cell : bestEdge.getCells()){
 				sacrifice(cell, stack);
 			}
