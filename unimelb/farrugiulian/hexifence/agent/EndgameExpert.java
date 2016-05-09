@@ -14,6 +14,7 @@ import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 import unimelb.farrugiulian.hexifence.board.features.Chain;
 import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
+import unimelb.farrugiulian.hexifence.board.features.Loop;
 import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
 public class EndgameExpert extends Agent {
@@ -41,7 +42,7 @@ public class EndgameExpert extends Agent {
 	}
 
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		
 		// remove this edge from play
 		if (!freeScoring.remove(edge)) {
@@ -88,7 +89,7 @@ public class EndgameExpert extends Agent {
 		}
 		
 		if (!locked && safe.size() == 0) {
-			features = new FeatureSet(board);
+			features = new FeatureSet(board, super.piece);
 			locked = true;
 		} else if (features != null) {
 			features.update(edge);
@@ -110,7 +111,7 @@ public class EndgameExpert extends Agent {
 		
 		isolatedShortChains = numIsolatedSacrifices(); // For calculating parity
 		
-		// Do a search to find whether to douoble box or not
+		// Do a search to find whether to double box or not
 		if (features.getOpenFeatures().size() > 0) {
 			
 		}
@@ -178,7 +179,7 @@ public class EndgameExpert extends Agent {
 	private ArrayList<RichFeature> getIntersectedSacrifices() {
 		return features.getIntersectedShortChains().addAll(features.getIntersectedClusters());
 	}
-	
+
 	private int sacrificeSize(Edge edge) {
 		int size = 0;
 		Stack<Edge> stack = new Stack<Edge>();

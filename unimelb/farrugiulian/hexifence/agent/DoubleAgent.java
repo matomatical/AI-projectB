@@ -1,14 +1,10 @@
 package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.List;
-import java.util.Random;
 import java.util.Stack;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 
 import com.matomatical.util.QueueHashSet;
 
@@ -425,46 +421,3 @@ public class DoubleAgent extends Agent{
 		return true;
 	}
 }
-
-
-// old linear time move selection
-
-//// select cells that are free!
-//
-//for(Edge edge : edges){
-//	if(edge.numCapturableCells()>0){
-//		return edge;
-//	}
-//}
-//
-//// then select moves that wont sacrifice a cell
-//
-//int offset = rng.nextInt(edges.length);
-//
-//for(int i = 0; i < edges.length; i++){
-//	Edge edge = edges[(i + offset) % edges.length];
-//	
-//	boolean safe = true;
-//	Cell[] cells = edge.getCells();
-//	for(Cell cell : cells){
-//		if(cell.numFreeEdges() == 2){
-//			// this cell is not safe to capture around
-//			safe = false;
-//		}
-//	}
-//	if(safe){
-//		return edge;
-//	}
-//}
-
-//first select moves that will capture a cell
-
-//		if(free.size() > 0){
-//			return free.remove();
-//		}
-//		
-//		// then select moves that are safe
-//		
-//		if(safe.size() > 0){
-//			return safe.remove();
-//		}
