@@ -13,6 +13,7 @@ import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 import unimelb.farrugiulian.hexifence.board.features.Chain;
 import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
+import unimelb.farrugiulian.hexifence.board.features.Loop;
 import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
 public class EndgameExpert extends Agent {
@@ -40,7 +41,7 @@ public class EndgameExpert extends Agent {
 	}
 
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		
 		// remove this edge from play
 		if (!freeScoring.remove(edge)) {
@@ -87,7 +88,7 @@ public class EndgameExpert extends Agent {
 		}
 		
 		if (!locked && safe.size() == 0) {
-			features = new FeatureSet(board);
+			features = new FeatureSet(board, super.piece);
 			locked = true;
 		} else if (features != null) {
 			features.update(edge);
@@ -109,7 +110,7 @@ public class EndgameExpert extends Agent {
 		
 		isolatedShortChains = numIsolatedSacrifices();
 		
-		if (features.getIntersectedShortChains().size() == 0 && features.getClusters().size == 0) {
+		if (features.numIntersectedShortChains() == 0 && features.numClusters() == 0) {
 			// Simple parity evaluation right now, should consider sacrifices
 			return (max ? 0 : 1);
 		}
@@ -168,14 +169,6 @@ public class EndgameExpert extends Agent {
 			}
 		}
 		return bestValue;
-	}
-	
-	private int numIsolatedSacrifices() {
-		return features.getIsolatedShortChains().size() + features.getIsolatedClusters().size();
-	}
-	
-	private int numIntersectedSacrifices() {
-		
 	}
 	
 	private int sacrificeSize(Edge edge) {

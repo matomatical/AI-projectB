@@ -46,12 +46,12 @@ public class FeatureSet {
 				
 			} else if(raw.classification() == Classification.CHAIN){
 				// create new chain feature
-				Chain chain = new Chain(raw.getCells());
+				Chain chain = new Chain(raw.getCells(), this);
 				
 				// link to 0-2 intersection(s)
 				for(Cell end : raw.getEnds()){
 					if(end != null){
-						Intersection intersection = map.getOrDefault(end, new Intersection(end));
+						Intersection intersection = map.getOrDefault(end, new Intersection(end, this));
 						
 						intersection.addChain(chain);
 						chain.addIntersection(intersection);
@@ -72,7 +72,7 @@ public class FeatureSet {
 				
 			} else if(raw.classification() == Classification.ISO_LOOP){
 				// create new IsoLoop feature
-				Loop loop = new Loop(raw.getCells());
+				Loop loop = new Loop(raw.getCells(), this);
 				
 				// it's isolated, so no intersections to think about
 				
@@ -84,11 +84,11 @@ public class FeatureSet {
 				}
 			} else if(raw.classification() == Classification.LOOP){
 				// create new loop feature
-				Loop loop = new Loop(raw.getCells()); 
+				Loop loop = new Loop(raw.getCells(), this); 
 				
 				// link to intersection
 				Cell end = raw.getEnds()[0];
-				Intersection intersection = map.getOrDefault(end, new Intersection(end));
+				Intersection intersection = map.getOrDefault(end, new Intersection(end, this));
 				
 				intersection.addLoop(loop);
 				loop.addIntersection(intersection);
@@ -106,7 +106,7 @@ public class FeatureSet {
 				
 				// make a new intersection feature (if it doesn't already exist)
 				Cell cell = raw.getCells()[0];
-				Intersection intersection = map.getOrDefault(cell, new Intersection(cell));	
+				Intersection intersection = map.getOrDefault(cell, new Intersection(cell, this));	
 				
 				// store the intersection
 				intersections.add(intersection);
@@ -237,4 +237,41 @@ public class FeatureSet {
 		visited.add(cell);
 		return;
 	}
+
+	public void update(Edge edge) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int numIntersectedShortChains() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public ArrayList<Chain> getIntersectedShortChains() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int numClusters() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public ArrayList<Loop> getClusters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ArrayList<Loop> getIntersectedClusters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	public void rewind() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
