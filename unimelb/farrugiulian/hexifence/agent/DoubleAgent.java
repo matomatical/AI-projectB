@@ -15,6 +15,7 @@ import com.matomatical.util.QueueHashSet;
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
+import unimelb.farrugiulian.hexifence.board.features.Feature;
 
 public class DoubleAgent extends Agent{
 	
@@ -138,6 +139,7 @@ public class DoubleAgent extends Agent{
 				e.printStackTrace();
 			}*/
 			// Double box
+			boolean isLoop = isLoop(scoring.peek());
 			if (capturable == 2 || capturable == 4 && isLoop(scoring.peek())) {
 				Cell[] cells = scoring.peek().getCells();
 				Cell cell;
@@ -160,25 +162,37 @@ public class DoubleAgent extends Agent{
 				// If we need to switch parity then double box
 				consumeAll(stack);
 				Edge choice;
-				int numShortChains = numShortChains();
-				System.out.print(color + " has " + numShortChains + " short chains so " + color);
-				if (numShortChains % 2 == 0) {
-					System.out.println(" is double boxing");
+				if (numShortChains() % 2 == 0) {
+					System.out.print(color + " is double boxing a ");
 					choice = paritySwitch;
 				} else {
-					System.out.println(" is not double boxing");
+					System.out.print(color + " is not double boxing a ");
 					choice = parityKeep;
+				}
+				if (isLoop) {
+					System.out.println("loop");
+				} else {
+					System.out.println("chain");
 				}
 				while(!stack.isEmpty()){
 					board.unplace(stack.pop());
 				}
 				return choice;
 			}
-			// Double double box
-			if (capturable == 4 && isLoop(scoring.peek())){
-				System.out.println("Double double box here");
+			
+			// Logic for in case the enemy does not take a big sacrifice, and offers
+			// it back at us. It just prioritises taking the smallest dead end.
+			Edge bestEdge = null;
+			for (Edge edge : scoring) {
+				isLoop = false;
+				int captureSize = 10000;
+				if ((isLoop(edge) || !isLoop ) && sacrificeSize(edge) < captureSize) {
+					bestEdge = edge;
+					captureSize = sacrificeSize(edge);
+					isLoop = isLoop(edge);
+				}
 			}
-			return scoring.remove();
+			return bestEdge;
 		}
 		
 		// then and only then, select a move that will lead to a small sacrifice
