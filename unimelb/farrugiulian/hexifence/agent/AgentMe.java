@@ -20,7 +20,7 @@ public class AgentMe extends Agent{
 	}
 
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		// not tracking state
 	}
 }

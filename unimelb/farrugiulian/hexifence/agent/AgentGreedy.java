@@ -12,7 +12,7 @@ import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
-import unimelb.farrugiulian.hexifence.board.features.Feature;
+import unimelb.farrugiulian.hexifence.board.features.RawFeature;
 
 public class AgentGreedy extends Agent{
 	
@@ -35,7 +35,7 @@ public class AgentGreedy extends Agent{
 	}
 	
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		
 		// remove this edge from play
 		if(!free.remove(edge)) {
@@ -82,16 +82,6 @@ public class AgentGreedy extends Agent{
 		
 		if(safe.size() > 0){
 			return safe.remove();
-		}
-		
-		Feature[] features = AgentFarrugiulian.chainify(board);
-		
-		for(Feature feature : features){
-			System.out.println(feature.toString());	
-		}
-		
-		while(safe.isEmpty()){
-			
 		}
 		
 		// then and only then, select a move that will lead to a small sacrifice

@@ -45,7 +45,7 @@ public abstract class Agent implements VisualPlayer{
 	protected abstract Edge getChoice();
 	
 	// let the agent know that a piece has been placed on the board
-	protected abstract void notify(Edge edge);
+	protected abstract void update(Edge edge);
 	
 	@Override
 	public Move makeMove(){
@@ -74,7 +74,7 @@ public abstract class Agent implements VisualPlayer{
 		
 		// place piece on board
 		choice.place(this.piece);
-		this.notify(choice);
+		this.update(choice);
 		
 		// and finally, return the move
 		return newMove(choice);
@@ -129,7 +129,7 @@ public abstract class Agent implements VisualPlayer{
 				
 				// record the move
 				edge.place(opponent);
-				this.notify(edge);
+				this.update(edge);
 				
 				if(n > 0){
 					// damn, they scored, they get another turn

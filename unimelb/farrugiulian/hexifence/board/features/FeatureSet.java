@@ -12,14 +12,13 @@ public class FeatureSet {
 
 	private ArrayList<Chain> longChains = new ArrayList<Chain>();
 	private ArrayList<Chain> shortChains = new ArrayList<Chain>();
-	
-	// what should we track?
+	private ArrayList<Chain> twoChains = new ArrayList<Chain>();
+
 	private ArrayList<Loop> longLoops = new ArrayList<Loop>();
 	private ArrayList<Loop> shortLoops = new ArrayList<Loop>();
-	private ArrayList<Intersection> intersections = new ArrayList<Intersection>();
-	// what other features?
 	
-	// 
+	private ArrayList<Intersection> intersections = new ArrayList<Intersection>();
+	
 	private int myScore = 0, yourScore = 0;
 	
 	public FeatureSet(Board board, int piece){
@@ -32,12 +31,15 @@ public class FeatureSet {
 	}
 	
 	private void process(ArrayList<RawFeature> features, int piece){
-		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>; 
+		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>(); 
 		
 		for(RawFeature raw : features){
 			if(raw.classification() == Classification.DEAD){
+				
+				// no need to store these as features, but we will track the score
 				if(raw.getCells()[0].getColor() == piece){
 					myScore++;
+				
 				} else {
 					yourScore++;
 				}
@@ -46,17 +48,76 @@ public class FeatureSet {
 				// create new chain feature
 				Chain chain = new Chain(raw.getCells());
 				
-				// handle ends
+				// link to 0-2 intersection(s)
 				for(Cell end : raw.getEnds()){
 					if(end != null){
 						Intersection intersection = map.getOrDefault(end, new Intersection(end));
+						
 						intersection.addChain(chain);
 						chain.addIntersection(intersection);
+						
 						map.put(end, intersection);
 					}
 				}
-			} else if(raw.classification() == Classification.ISO_LOOP){
 				
+				// store the feature
+				if(chain.length() > 2){
+					longChains.add(chain);
+				} else if(chain.length() < 2){
+					shortChains.add(chain);
+				} else {
+					twoChains.add(chain);
+				}
+				
+				
+			} else if(raw.classification() == Classification.ISO_LOOP){
+				// create new IsoLoop feature
+				Loop loop = new Loop(raw.getCells());
+				
+				// it's isolated, so no intersections to think about
+				
+				// just store the loop
+				if(loop.length() > 3){
+					longLoops.add(loop);
+				} else {
+					shortLoops.add(loop);
+				}
+			} else if(raw.classification() == Classification.LOOP){
+				// create new loop feature
+				Loop loop = new Loop(raw.getCells()); 
+				
+				// link to intersection
+				Cell end = raw.getEnds()[0];
+				Intersection intersection = map.getOrDefault(end, new Intersection(end));
+				
+				intersection.addLoop(loop);
+				loop.addIntersection(intersection);
+				
+				map.put(end, intersection);
+				
+				// and store the loop
+				if(loop.length() > 3){
+					longLoops.add(loop);
+				} else {
+					shortLoops.add(loop);
+				}
+				
+			} else if(raw.classification() == Classification.INTERSECTION){
+				
+				// make a new intersection feature (if it doesn't already exist)
+				Cell cell = raw.getCells()[0];
+				Intersection intersection = map.getOrDefault(cell, new Intersection(cell));	
+				
+				// store the intersection
+				intersections.add(intersection);
+				
+				// and ensure it's in the map
+				map.put(cell, intersection);
+				
+			} else {
+				// we've encountered something we haven't considered (open chains etc)
+				System.err.println("Hey! Looks like you're not processing "
+					+ raw.classification().name() + " in FeatureSet.process()");
 			}
 		}
 	}

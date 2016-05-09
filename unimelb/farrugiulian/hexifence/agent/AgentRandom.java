@@ -21,7 +21,7 @@ public class AgentRandom extends Agent{
 	}
 
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		// not keeping state
 	}
 }

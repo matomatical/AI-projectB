@@ -41,7 +41,7 @@ public class DoubleAgent extends Agent{
 	}
 	
 	@Override
-	protected void notify(Edge edge) {
+	protected void update(Edge edge) {
 		
 		// remove this edge from play
 		if (!freeScoring.remove(edge)) {
