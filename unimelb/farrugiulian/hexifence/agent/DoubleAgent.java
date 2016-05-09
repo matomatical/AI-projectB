@@ -263,6 +263,9 @@ public class DoubleAgent extends Agent{
 		while(takeShortChain(stack) != 0) {
 			numShortChains++;
 		}
+		if (board.getFreeEdges().length == 0) {
+			numShortChains++;
+		}
 		// Undo all moves made while testing
 		while(!stack.isEmpty()){
 			board.unplace(stack.pop());
