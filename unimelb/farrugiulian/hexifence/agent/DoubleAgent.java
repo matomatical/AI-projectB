@@ -189,7 +189,7 @@ public class DoubleAgent extends Agent{
 		for(int i = 1; i < edges.length; i++){
 			Edge edge = edges[i];
 			int cost = sacrificeSize(edge);
-			if(cost < bestCost){
+			if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
 				bestEdge = edge;
 				bestCost = cost;
 			}
@@ -259,6 +259,9 @@ public class DoubleAgent extends Agent{
 		Stack<Edge> stack = new Stack<Edge>();
 		// Keep taking short chains while keeping count
 		while(takeShortChain(stack) != 0) {
+			numShortChains++;
+		}
+		if (board.getFreeEdges().length == 0) {
 			numShortChains++;
 		}
 		// Undo all moves made while testing
