@@ -12,6 +12,7 @@ import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
+import unimelb.farrugiulian.hexifence.board.features.Feature;
 
 public class AgentGreedy extends Agent{
 	
@@ -83,8 +84,18 @@ public class AgentGreedy extends Agent{
 			return safe.remove();
 		}
 		
-		// then and only then, select a move that will lead to a small sacrifice
+		Feature[] features = AgentFarrugiulian.chainify(board);
 		
+		for(Feature feature : features){
+			System.out.println(feature.toString());	
+		}
+		
+		while(safe.isEmpty()){
+			
+		}
+		
+		// then and only then, select a move that will lead to a small sacrifice
+	
 		Edge[] edges = board.getFreeEdges();
 		
 		// find the best option

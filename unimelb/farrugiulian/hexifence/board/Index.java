@@ -30,4 +30,9 @@ public abstract class Index {
 		result = prime * result + j;
 		return result;
 	}
+	
+	@Override
+	public String toString(){
+		return "(" + i + ", " + j + ")";
+	}
 }
