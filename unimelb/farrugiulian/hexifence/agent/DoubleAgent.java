@@ -17,8 +17,6 @@ import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
 public class DoubleAgent extends Agent{
-
-	private Random rng = new Random(System.nanoTime());
 	
 	private QueueHashSet<Edge> freeScoring;
 	private QueueHashSet<Edge> scoring;
@@ -97,11 +95,11 @@ public class DoubleAgent extends Agent{
 		// System.out.println(color + " has " + numShortChains() + " short chains left");
 		if (freeScoring.size() > 0) {
 			//System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			return freeScoring.remove();
 		}
 		
@@ -134,11 +132,11 @@ public class DoubleAgent extends Agent{
 			}
 			//System.out.println("Capturable cells: " + capturable);
 			//System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			// Double box
 			if (capturable == 2) {
 				Cell[] cells = scoring.peek().getCells();
@@ -225,12 +223,12 @@ public class DoubleAgent extends Agent{
 			}
 		}
 		//String color = super.piece == Piece.BLUE ? "Blue" : "Red";
-		System.out.println(color + " sacrificing chain of size " + bestCost);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		System.out.println(color + " sacrificing chain of size " + bestCost);
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		return bestEdge;
 	}
 	

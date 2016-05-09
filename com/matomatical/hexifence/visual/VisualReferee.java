@@ -13,15 +13,21 @@ public class VisualReferee {
 	
 	public VisualReferee(int dimension, VisualPlayer p1, VisualPlayer p2, boolean silence){
 		
+		// the players playing the game
 		this.p1 = p1;
 		this.p2 = p2;
 		
+		// player 1 moves first
 		now = p1;
 		next = p2;
 		
+		// the maximum number of moves
 		maxMoves = dimension * (9 * dimension - 3);
 		
+		// the loop guard (except loop is external)
 		this.playing = true;
+		
+		// do we want to print to the console too?
 		this.silence = silence;
 	}
 	
@@ -61,6 +67,7 @@ public class VisualReferee {
 			return board;
 		}
 		
+		// if the game has already ended, just return the first player's board
 		return p1.getBoard();
 	}
 }

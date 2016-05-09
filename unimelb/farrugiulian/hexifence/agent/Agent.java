@@ -11,17 +11,18 @@ import unimelb.farrugiulian.hexifence.board.Edge;
 
 public abstract class Agent implements VisualPlayer{
 
-	protected Board board;
 	protected int piece;
 	protected int opponent;
 	
 	protected int myScore = 0;
 	protected int yourScore = 0;
 	
-	
+	private enum PlayerState {
+		STARTING, MOVING, WAITING, CHEATED;
+	}
 	private PlayerState state;
-	private long total;
 	
+	protected Board board;
 	
 	@Override
 	public int init(int n, int p) {
@@ -39,10 +40,11 @@ public abstract class Agent implements VisualPlayer{
 		// all okay!
 		return 0;
 	}
-
+	
 	// the only part of agent behavior that actually changes
 	protected abstract Edge getChoice();
 	
+	// let the agent know that a piece has been placed on the board
 	protected abstract void notify(Edge edge);
 	
 	@Override
@@ -64,7 +66,7 @@ public abstract class Agent implements VisualPlayer{
 				// my turn again
 				this.state = PlayerState.MOVING;
 			}
-			
+		
 		} else {
 			// it's not my turn! state == WAITING or CHEATED
 			System.out.println("Farrugiulian: hey! it's not my turn! " + this.state.name());
@@ -78,15 +80,21 @@ public abstract class Agent implements VisualPlayer{
 		return newMove(choice);
 	}
 	
-	/** Helper function to generate a new move from an edge and our piece */
+	/** Helper function to generate a new move from an edge and our piece
+	 * @param edge - the Edge we're generating a move for
+	 * @return a new move based on this edge
+	 **/
 	private Move newMove(Edge edge){
 		
+		// make a new move
 		Move m = new Move();
 		
+		// set it up
 		m.Row = edge.i;
 		m.Col = edge.j;
 		m.P = this.piece;
 		
+		// return it
 		return m;
 	}
 
@@ -98,10 +106,9 @@ public abstract class Agent implements VisualPlayer{
 		if(this.state == PlayerState.MOVING){
 			
 			// hey! it's still MY turn!
-			System.out.println("oi! it was MY turn! " + this.state.name());
 			this.state = PlayerState.CHEATED;
 			return -1;
-			
+		
 		} else if(this.state == PlayerState.WAITING || this.state == PlayerState.STARTING){
 			// we ARE expecting a move
 			// better validate the move...
@@ -112,28 +119,30 @@ public abstract class Agent implements VisualPlayer{
 				// is was an invalid move!
 				this.state = PlayerState.CHEATED;
 				return -1;
+				
 			} else {
 				// it was a valid move
 				
 				// how many did they capture?
 				int n = edge.numCapturableCells();
+				this.yourScore += n;
 				
 				// record the move
 				edge.place(opponent);
-				this.yourScore += n;
-				
 				this.notify(edge);
 				
 				if(n > 0){
 					// damn, they scored, they get another turn
 					this.state = PlayerState.WAITING;
 					return 1;
+				
 				} else {
 					// they didn't score, my turn next
 					this.state = PlayerState.MOVING;
 					return 0;
 				}
-			}	
+			}
+			
 		} else {
 			// they must have cheated earlier, we shouldn't get here
 			return -1;
@@ -174,6 +183,7 @@ public abstract class Agent implements VisualPlayer{
 		board.printTo(output);
 	}
 	
+	@Override
 	public VisualBoard getBoard(){
 		return board;
 	}

@@ -7,7 +7,6 @@ import java.util.Stack;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import com.matomatical.util.QueueHashSet;
 
@@ -15,8 +14,6 @@ import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
 public class AgentGreedy extends Agent{
-
-	private Random rng = new Random(System.nanoTime());
 	
 	private QueueHashSet<Edge> free;
 	private QueueHashSet<Edge> safe;
@@ -27,7 +24,7 @@ public class AgentGreedy extends Agent{
 		int r = super.init(n, p);
 	
 		List<Edge> edges = Arrays.asList(board.getEdges());
-		Collections.shuffle(edges);
+		Collections.shuffle(edges, new Random(System.nanoTime()));
 		
 		free = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>(edges);
@@ -74,22 +71,23 @@ public class AgentGreedy extends Agent{
 	@Override
 	public Edge getChoice(){
 		
-	if(free.size() > 0){
-		return free.remove();
-	}
-	
-	// then select moves that are safe
-	
-	if(safe.size() > 0){
-		return safe.remove();
-	}
-
-	// then and only then, select a move that will lead to a small sacrifice
-	
-	Edge[] edges = board.getFreeEdges();
+		// selec moves that capture a cell
 		
-		// all remaining edges represent possible sacrifices,
-		// just find the best option (least damage)
+		if(free.size() > 0){
+			return free.remove();
+		}
+		
+		// then select moves that are safe
+		
+		if(safe.size() > 0){
+			return safe.remove();
+		}
+		
+		// then and only then, select a move that will lead to a small sacrifice
+		
+		Edge[] edges = board.getFreeEdges();
+		
+		// find the best option
 		
 		Edge bestEdge = edges[0];
 		int bestCost = sacrificeSize(edges[0]);
@@ -189,6 +187,8 @@ public class AgentGreedy extends Agent{
 //		return edge;
 //	}
 //}
+
+// new hopefully-constant-time move selection
 
 //first select moves that will capture a cell
 
