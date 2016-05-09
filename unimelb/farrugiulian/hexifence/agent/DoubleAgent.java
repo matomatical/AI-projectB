@@ -94,12 +94,12 @@ public class DoubleAgent extends Agent{
 		String color = super.piece == Piece.BLUE ? "Blue" : "Red";
 		// System.out.println(color + " has " + numShortChains() + " short chains left");
 		if (freeScoring.size() > 0) {
-			//System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
+			/*System.out.println("Taking " + freeScoring.peek().i + "," + freeScoring.peek().j);
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}*/
 			return freeScoring.remove();
 		}
 		
@@ -130,15 +130,15 @@ public class DoubleAgent extends Agent{
 			while(!stack.isEmpty()){
 				board.unplace(stack.pop());
 			}
-			//System.out.println("Capturable cells: " + capturable);
-			//System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
+			/*System.out.println("Capturable cells: " + capturable);
+			System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}*/
 			// Double box
-			if (capturable == 2) {
+			if (capturable == 2 || capturable == 4 && isLoop(scoring.peek())) {
 				Cell[] cells = scoring.peek().getCells();
 				Cell cell;
 				// Get the cell that has the edge that can double box
@@ -173,6 +173,10 @@ public class DoubleAgent extends Agent{
 					board.unplace(stack.pop());
 				}
 				return choice;
+			}
+			// Double double box
+			if (capturable == 4 && isLoop(scoring.peek())){
+				System.out.println("Double double box here");
 			}
 			return scoring.remove();
 		}
@@ -222,13 +226,12 @@ public class DoubleAgent extends Agent{
 				bestEdge = secureEdge;
 			}
 		}
-		//String color = super.piece == Piece.BLUE ? "Blue" : "Red";
-//		System.out.println(color + " sacrificing chain of size " + bestCost);
-//		try {
-//			Thread.sleep(2000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
+		System.out.println(color + " sacrificing chain of size " + bestCost);
+		/*try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}*/
 		return bestEdge;
 	}
 	
@@ -326,27 +329,6 @@ public class DoubleAgent extends Agent{
 		
 		return size;
 	}
-	
-	private boolean isLoop(Edge edge) {
-		Stack<Edge> stack = new Stack<Edge>();
-		boolean isLoop = false;
-		
-		board.place(edge, super.opponent);
-		stack.push(edge);
-		
-		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
-				sacrifice(cell, stack);
-			} else {
-				isLoop = true;
-			}
-		}
-		
-		while(!stack.isEmpty()){
-			board.unplace(stack.pop());
-		}
-		return isLoop;
-	}
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
@@ -378,6 +360,56 @@ public class DoubleAgent extends Agent{
 		
 		// n == 0, which means this cell is a dead end for the taking
 		return 1;
+	}
+	
+	private boolean isLoop(Edge edge) {
+		Stack<Edge> stack = new Stack<Edge>();
+		boolean isLoop = false;
+		
+		board.place(edge, super.opponent);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numFreeEdges() != 0){
+				isLoop |= hasDeadEnd(cell, stack);
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return isLoop;
+	}
+	
+	private boolean hasDeadEnd(Cell cell, Stack<Edge> stack){
+		
+		int n = cell.numFreeEdges();
+		
+		if(n > 1){
+			// this cell is not available for capture
+			return false;
+		} else if (n == 1){
+			for(Edge edge : cell.getEdges()){
+				if(edge.isEmpty()){
+					
+					// claim this piece
+					edge.place(super.opponent);
+					stack.push(edge);
+					
+					// follow opposite cell
+					Cell other = edge.getOtherCell(cell);
+					
+					if(other == null){
+						return false;
+					}
+					
+					return hasDeadEnd(other, stack);
+				}	
+			}
+		}
+		
+		// n == 0, which means this cell is a dead end for the taking
+		return true;
 	}
 }
 
