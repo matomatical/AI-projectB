@@ -1,5 +1,6 @@
 package unimelb.farrugiulian.hexifence.agent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -107,75 +108,75 @@ public class EndgameExpert extends Agent {
 			return safe.remove();
 		}
 		
-		isolatedShortChains = numIsolatedSacrifices();
+		isolatedShortChains = numIsolatedSacrifices(); // For calculating parity
 		
-		if (features.getIntersectedShortChains().size() == 0 && features.getClusters().size == 0) {
-			// Simple parity evaluation right now, should consider sacrifices
-			return (max ? 0 : 1);
+		// Do a search to find whether to douoble box or not
+		if (features.getOpenFeatures().size() > 0) {
+			
 		}
 		
+		// How do we open up long chains now?
+		if (numIntersectedSacrifices() == 0) {
+			
+		}
+		
+		// Do a search to find which intersected sacrifice to open
 		RichFeature bestFeature;
 		float bestValue;
 		float testValue;
 		bestValue = Float.NEGATIVE_INFINITY;
-		for (Chain chain : features.getIntersectedShortChains()) {
-			chain.consume();
+		for (RichFeature feature : getIntersectedSacrifices()) {
+			feature.open();
 			testValue = minimax(false);
-			bestValue = Math.max(bestValue, testValue);
+			if (testValue > bestValue) {
+				bestValue = testValue;
+				bestFeature = feature;
+			}
 			features.rewind();
 		}
-		for (Loop loop : features.getIntersectedClusters()) {
-			loop.consume();
-			testValue = minimax(false);
-			bestValue = Math.max(bestValue, testValue);
-			features.rewind();
-		}
-		
-		return null;
+		return bestFeature.openMove();
 	}
 	
 	private float minimax(boolean max) {
-		if (features.getIntersectedShortChains().size() == 0 && features.getIntersectedClusters().size == 0) {
-			// Simple parity evaluation right now, should consider sacrifices
-			return (max ? 0 : 1);
+		if (numIntersectedSacrifices() == 0) {
+			// Simple parity evaluation right now, not sure if actually correct
+			return (((max ? 0 : 1) + isolatedShortChains) % 2 == 0 ? 0 : 1);
 		}
 		
+		features.getOpenFeatures[0].consume();
+		
 		float bestValue;
-		float testValue;
 		if (max) {
 			bestValue = Float.NEGATIVE_INFINITY;
-			for (Chain chain : features.getIntersectedShortChains()) {
-				chain.consume();
-				bestValue = Math.max(bestValue, minimax(false));
-				features.rewind();
-			}
-			for (Loop loop : features.getIntersectedClusters()) {
-				loop.consume();
-				bestValue = Math.max(bestValue, minimax(false));
+			for (RichFeature feature : getIntersectedSacrifices()) {
+				feature.open();
+				bestValue = Math.max(bestValue, minimax(true));
 				features.rewind();
 			}
 		} else {
 			bestValue = Float.POSITIVE_INFINITY;
-			for (Chain chain : features.getIntersectedShortChains()) {
-				chain.consume();
-				bestValue = Math.min(bestValue, minimax(false));
-				features.rewind();
-			}
-			for (Loop chain : features.getIntersectedClusters()) {
-				loop.consume();
+			for (RichFeature feature : getIntersectedSacrifices()) {
+				feature.open();
 				bestValue = Math.min(bestValue, minimax(false));
 				features.rewind();
 			}
 		}
+		
+		features.rewind();
+		
 		return bestValue;
 	}
 	
 	private int numIsolatedSacrifices() {
-		return features.getIsolatedShortChains().size() + features.getIsolatedClusters().size();
+		return features.numIsolatedShortChains() + features.numIsolatedClusters();
 	}
 	
 	private int numIntersectedSacrifices() {
-		
+		return features.numIntersectedShortChains() + features.numIntersectedClusters();
+	}
+	
+	private ArrayList<RichFeature> getIntersectedSacrifices() {
+		return features.getIntersectedShortChains().addAll(features.getIntersectedClusters());
 	}
 	
 	private int sacrificeSize(Edge edge) {

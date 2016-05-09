@@ -15,7 +15,6 @@ import com.matomatical.util.QueueHashSet;
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
-import unimelb.farrugiulian.hexifence.board.features.Feature;
 
 public class DoubleAgent extends Agent{
 	
