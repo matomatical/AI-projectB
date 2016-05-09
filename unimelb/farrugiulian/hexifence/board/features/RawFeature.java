@@ -42,6 +42,14 @@ public class RawFeature {
 		// return true if both ends have been added and are the same (non-isolated loop)
 		return nends == 2 && ends[0] == ends[1] && ends[0] != null;
 	}
+
+	public Cell[] getCells(){
+		return cells.toArray(new Cell[cells.size()]);
+	}
+	
+	public Cell[] getEnds() {
+		return ends;
+	}
 	
 	public String toString(){
 		return type.name() + " of length " + length() + ": " + cells.toString();

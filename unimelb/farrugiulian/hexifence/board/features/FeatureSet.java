@@ -22,25 +22,50 @@ public class FeatureSet {
 	// 
 	private int myScore = 0, yourScore = 0;
 	
-	public FeatureSet(Board board){
+	public FeatureSet(Board board, int piece){
 		
 		// process board into raw features
 		ArrayList<RawFeature> features = chainify(board);
 		
 		// process raw features into rich features
-		process(features);
+		process(features, piece);
 	}
 	
-	private void process(ArrayList<RawFeature> features){
-		HashMap<RawFeature, RichFeature> map = new HashMap<RawFeature, RichFeature>; 
+	private void process(ArrayList<RawFeature> features, int piece){
+		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>; 
 		
 		for(RawFeature raw : features){
 			if(raw.classification() == Classification.DEAD){
-				if(raw.getCells()[0])
+				if(raw.getCells()[0].getColor() == piece){
+					myScore++;
+				} else {
+					yourScore++;
+				}
+				
+			} else if(raw.classification() == Classification.CHAIN){
+				// create new chain feature
+				Chain chain = new Chain(raw.getCells());
+				
+				// handle ends
+				for(Cell end : raw.getEnds()){
+					if(end != null){
+						Intersection intersection = map.getOrDefault(end, new Intersection(end));
+						intersection.addChain(chain);
+						chain.addIntersection(intersection);
+						map.put(end, intersection);
+					}
+				}
+			} else if(raw.classification() == Classification.ISO_LOOP){
+				
 			}
 		}
 	}
-
+	
+	
+	
+	
+	
+	
 	private ArrayList<RawFeature> chainify(Board board){
 		
 		// do we need a feature map instead?
@@ -59,6 +84,9 @@ public class FeatureSet {
 		
 		return features;
 	}
+	
+	
+	
 	
 	private RawFeature classify(Cell cell, HashSet<Cell> visited) {
 		
