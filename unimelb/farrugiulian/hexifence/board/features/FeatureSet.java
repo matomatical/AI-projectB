@@ -9,13 +9,15 @@ import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
 public class FeatureSet {
-
+	
 	private ArrayList<Chain> longChains = new ArrayList<Chain>();
 	private ArrayList<Chain> shortChains = new ArrayList<Chain>();
 	private ArrayList<Chain> twoChains = new ArrayList<Chain>();
 
 	private ArrayList<Loop> longLoops = new ArrayList<Loop>();
 	private ArrayList<Loop> shortLoops = new ArrayList<Loop>();
+	
+	// separately store isolated chains and loops?
 	
 	private ArrayList<Intersection> intersections = new ArrayList<Intersection>();
 	
@@ -30,8 +32,105 @@ public class FeatureSet {
 		process(features, piece);
 	}
 	
+	public FeatureSet(FeatureSet old){
+
+		this.myScore = old.myScore;
+		this.yourScore = old.yourScore;		
+		
+		// map to store intersections as we encounter them for each cell
+		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>();
+		
+		// now go clone all the features
+		for(Chain c : old.longChains){
+			this.longChains.add(new Chain(c, map));
+		}
+		
+		for(Chain c : old.shortChains){
+			this.shortChains.add(new Chain(c, map));
+		}
+		
+		for(Chain c : old.twoChains){
+			this.twoChains.add(new Chain(c, map));
+		}
+
+		for(Loop l : old.longLoops){
+			this.longLoops.add(new Loop(l, map));
+		}
+
+		for(Loop l : old.shortLoops){
+			this.shortLoops.add(new Loop(l, map));
+		}
+		
+		// now, since each intersection intersects at LEAST one thing,
+		// it definitely will have been created by now, and be inside the hashmap
+		
+		for(Intersection i : old.intersections){
+			// map stores new intersections
+			this.intersections.add(map.get(i.cell));
+		}
+	}
+	
+
+
+	
+	public int getMyScore(){ return myScore; }
+	public int getYourScore(){ return yourScore; }
+	
+	
+
+
+	
+	public int numIntersectedShortChains() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public ArrayList<Chain> getIntersectedShortChains() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int numClusters() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public ArrayList<Loop> getClusters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ArrayList<Loop> getIntersectedClusters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void update(Edge edge) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	
 	private void process(ArrayList<RawFeature> features, int piece){
-		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>(); 
+		
+		// map to store intersections as we encounter them for each cell
+		HashMap<Cell, Intersection> map = new HashMap<Cell, Intersection>();
 		
 		for(RawFeature raw : features){
 			if(raw.classification() == Classification.DEAD){
@@ -122,14 +221,8 @@ public class FeatureSet {
 		}
 	}
 	
-	
-	
-	
-	
-	
 	private ArrayList<RawFeature> chainify(Board board){
 		
-		// do we need a feature map instead?
 		ArrayList<RawFeature> features = new ArrayList<RawFeature>();
 		
 		Cell[] cells = board.getCells();
@@ -145,9 +238,6 @@ public class FeatureSet {
 		
 		return features;
 	}
-	
-	
-	
 	
 	private RawFeature classify(Cell cell, HashSet<Cell> visited) {
 		
@@ -238,40 +328,6 @@ public class FeatureSet {
 		return;
 	}
 
-	public void update(Edge edge) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public int numIntersectedShortChains() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public ArrayList<Chain> getIntersectedShortChains() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public int numClusters() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 	
-	public ArrayList<Loop> getClusters() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public ArrayList<Loop> getIntersectedClusters() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
-	public void rewind() {
-		// TODO Auto-generated method stub
-		
-	}
 
 }
