@@ -5,12 +5,15 @@ import java.util.Stack;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
+import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
+import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
 public class DoubleAgent extends Agent{
 	
@@ -84,6 +87,57 @@ public class DoubleAgent extends Agent{
 		}
 	}
 	
+	private float midgameMinimax(QueueHashSet<Edge> safe, boolean max) {
+		if (safe.size() == 0) {
+			// Need to replace this with another minimax that works on dfs results
+			return max ^ ((numShortChains() % 2) == 0) ? 1 : 0;
+		}
+		
+		float bestValue;
+		Iterator<Edge> iterator = safe.iterator();
+		if (max) {
+			bestValue = Float.NEGATIVE_INFINITY;
+			while (iterator.hasNext()) {
+				QueueHashSet<Edge> safeTmp = new QueueHashSet<Edge>();
+				safeTmp.addAll(safe);
+				Edge edge = iterator.next();
+				edge.place(super.piece);
+				safeTmp.remove(edge);
+				for(Cell cell : edge.getCells()){
+					if(cell.numFreeEdges() == 2){
+						for(Edge e : cell.getFreeEdges()){
+							// these edges are no longer safe!
+							safeTmp.remove(e);
+						}
+					}
+				}
+				bestValue = Math.max(bestValue, midgameMinimax(safeTmp, false));
+				board.unplace(edge);
+			}
+		} else {
+			bestValue = Float.POSITIVE_INFINITY;
+			while (iterator.hasNext()) {
+				QueueHashSet<Edge> safeTmp = new QueueHashSet<Edge>();
+				safeTmp.addAll(safe);
+				Edge edge = iterator.next();
+				edge.place(super.piece);
+				safeTmp.remove(edge);
+				for(Cell cell : edge.getCells()){
+					if(cell.numFreeEdges() == 2){
+						for(Edge e : cell.getFreeEdges()){
+							// these edges are no longer safe!
+							safeTmp.remove(e);
+						}
+					}
+				}
+				bestValue = Math.min(bestValue, midgameMinimax(safeTmp, true));
+				board.unplace(edge);
+			}
+		}
+		
+		return bestValue;
+	}
+	
 	@Override
 	public Edge getChoice(){
 		// Free scoring cells are always safe to take
@@ -102,6 +156,36 @@ public class DoubleAgent extends Agent{
 		// then select moves that are safe
 		
 		if(safe.size() > 0){
+			if (safe.size() < 15) {
+				Edge bestEdge = null;
+				float bestValue;
+				float testValue;
+				Iterator<Edge> iterator = safe.iterator();
+				bestValue = Float.NEGATIVE_INFINITY;
+				while (iterator.hasNext()) {
+					QueueHashSet<Edge> safeTmp = new QueueHashSet<Edge>();
+					safeTmp.addAll(safe);
+					Edge edge = iterator.next();
+					edge.place(super.piece);
+					safeTmp.remove(edge);
+					for(Cell cell : edge.getCells()){
+						if(cell.numFreeEdges() == 2){
+							for(Edge e : cell.getFreeEdges()){
+								// these edges are no longer safe!
+								safeTmp.remove(e);
+							}
+						}
+					}
+					testValue = midgameMinimax(safeTmp, false);
+					board.unplace(edge);
+					if (testValue > bestValue) {
+						bestValue = testValue;
+						bestEdge = edge;
+					}
+				}
+				System.out.println("Expected value: " + bestValue);
+				return bestEdge;
+			}
 			return safe.remove();
 		}
 		
