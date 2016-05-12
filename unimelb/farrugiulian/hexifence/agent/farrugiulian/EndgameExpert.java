@@ -7,6 +7,8 @@ public class EndgameExpert implements Expert {
 
 	public EndgameExpert(Board board) {
 		// TODO Auto-generated constructor stub
+		System.out.println("I'm not ready yet!");
+		System.exit(0);
 	}
 
 	@Override

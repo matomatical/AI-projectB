@@ -11,7 +11,7 @@ public class RawFeature {
 	private LinkedHashSet<Cell> cells = new LinkedHashSet<Cell>();
 	
 	private int nends = 0;
-	private Cell[] ends = new Cell[2];
+	private Cell[] ends = new Cell[2]; // default values?
 	
 	
 	

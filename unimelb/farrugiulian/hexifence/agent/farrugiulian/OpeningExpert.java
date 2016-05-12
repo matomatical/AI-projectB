@@ -22,21 +22,19 @@ import unimelb.farrugiulian.hexifence.board.*;
  **/
 public class OpeningExpert implements Expert {
 	
+	/** edges that represent cells free for the taking */
 	private QueueHashSet<Edge> free;
 	private QueueHashSet<Edge> safe;
-	private QueueHashSet<Edge> dont;
 
 	private final int transitionThreshold;
 	
 	/** Makes a new {@link OpeningExpert}
-	 * (This constructor assumes the board is still empty,
-	 *  that is, all edges are available and safe to pick)
 	 *  
-	 * @param board An <b>empty</b> board
+	 * @param board The board for this agent to watch
 	 **/
-	public OpeningExpert(Board board, int n){
+	public OpeningExpert(Board board, int transitionThreshold){
 		
-		this.transitionThreshold = n;
+		this.transitionThreshold = transitionThreshold;
 		
 		long seed = System.nanoTime();
 		
@@ -46,20 +44,58 @@ public class OpeningExpert implements Expert {
 		Collections.shuffle(edges, new Random(seed));
 		
 		// the expert's collections
-		free = new QueueHashSet<Edge>();
-		safe = new QueueHashSet<Edge>(edges);
-		dont = new QueueHashSet<Edge>();
+		
+		if(board.numFreeEdges() == board.numEdges()){
+			
+			// all edges are safe
+			free = new QueueHashSet<Edge>();
+			safe = new QueueHashSet<Edge>(edges);
+			
+		} else {
+			
+			free = new QueueHashSet<Edge>();
+			safe = new QueueHashSet<Edge>();
+			
+			// must check each edge for safety / freeness
+			
+			for(Edge edge : edges){
+				
+				// flag to check safety of both sides
+				boolean safeEdge = true;
+				
+				for(Cell cell : edge.getCells()){
+					
+					int n = cell.numFreeEdges();
+					
+					if(n == 1){
+						// this edge gives a free cell!
+						free.add(edge);
+						
+						// nothing more to consider
+						break;
+						
+					} else if(n == 2){
+						// this edge is not safe on this side!
+						safeEdge = false;
+					}
+				}
+				
+				if(safeEdge){
+					// safe on both sides!
+					safe.add(edge);
+				}
+				
+			}
+		}
 	}
 	
 	@Override
 	public void update(Edge edge) {
 		
-		// remove this edge from any set it is in
-		if(!safe.remove(edge)) {
-			if(!free.remove(edge)) {
-				dont.remove(edge);
-			}
-		}
+		// remove this edge from any set it was in
+		// (take advantage of lazy evaluation here)
+		if(safe.remove(edge) || free.remove(edge)){}
+		
 		
 		// track all potentially-affected edges
 		for(Cell cell : edge.getCells()){
@@ -69,17 +105,13 @@ public class OpeningExpert implements Expert {
 			if(n == 2){
 				// these edges are no longer safe!
 				for(Edge e : cell.getFreeEdges()){
-					if(safe.remove(e)){
-						dont.add(e);
-					}
+					safe.remove(e);
 				}
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
 				for(Edge e : cell.getFreeEdges()){
-					if(dont.remove(e)){
-						free.add(e);
-					}
+					free.add(e);
 				}
 			}
 		}

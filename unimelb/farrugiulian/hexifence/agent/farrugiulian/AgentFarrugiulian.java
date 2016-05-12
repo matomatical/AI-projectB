@@ -21,7 +21,7 @@ public class AgentFarrugiulian extends Agent {
 		// parent init success!
 		
 		// initialise the first expert
-		this.expert = new OpeningExpert(super.board, 10);
+		this.expert = new OpeningExpert(super.board, 15);
 		
 		// return the same value as superclass
 		return 0;
@@ -36,7 +36,7 @@ public class AgentFarrugiulian extends Agent {
 			if(stage == GameStage.OPENING){
 				stage = GameStage.MIDGAME;
 				
-				expert = new MidgameExpert(super.board);
+				expert = new MidgameExpert(super.board, super.piece);
 				
 			} else if(stage == GameStage.MIDGAME){
 				stage = GameStage.ENDGAME;

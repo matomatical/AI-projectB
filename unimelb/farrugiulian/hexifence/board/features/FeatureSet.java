@@ -17,6 +17,8 @@ public class FeatureSet {
 	private ArrayList<Loop> longLoops = new ArrayList<Loop>();
 	private ArrayList<Loop> shortLoops = new ArrayList<Loop>();
 	
+	private HashMap<Cell, RichFeature> featureMap = new HashMap<Cell, RichFeature>();
+	private HashMap<Cell, Intersection> intersectionMap = new HashMap<Cell, Intersection>();
 	// separately store isolated chains and loops?
 	
 	private ArrayList<Intersection> intersections = new ArrayList<Intersection>();
@@ -43,22 +45,37 @@ public class FeatureSet {
 		// now go clone all the features
 		for(Chain c : old.longChains){
 			this.longChains.add(new Chain(c, map));
+			for(Cell cell : c.getCells()){
+				this.featureMap.put(cell, c);
+			}
 		}
 		
 		for(Chain c : old.shortChains){
 			this.shortChains.add(new Chain(c, map));
+			for(Cell cell : c.getCells()){
+				this.featureMap.put(cell, c);
+			}
 		}
 		
 		for(Chain c : old.twoChains){
 			this.twoChains.add(new Chain(c, map));
+			for(Cell cell : c.getCells()){
+				this.featureMap.put(cell, c);
+			}
 		}
 
 		for(Loop l : old.longLoops){
 			this.longLoops.add(new Loop(l, map));
+			for(Cell cell : l.getCells()){
+				this.featureMap.put(cell, l);
+			}
 		}
 
 		for(Loop l : old.shortLoops){
 			this.shortLoops.add(new Loop(l, map));
+			for(Cell cell : l.getCells()){
+				this.featureMap.put(cell, l);
+			}
 		}
 		
 		// now, since each intersection intersects at LEAST one thing,
@@ -68,17 +85,93 @@ public class FeatureSet {
 			// map stores new intersections
 			this.intersections.add(map.get(i.cell));
 		}
+		
+		this.intersectionMap = map;
+	}
+		
+	public void update(Edge edge) {
+		
+	
+		// hmm, we'll need to find out which feature this affects,
+		// and preferably do so quickly! perhaps we need a cell -> feature map!
+		
+		Cell[] cells = edge.getCells();
+		
+		if(cells.length == 1){
+			// this is the side of a board
+			RichFeature f = featureMap.get(cells[0]);
+			if(f == null){
+				// this must have been part of an intersection on the edge,
+				// a 0-length chain in the intersection must close
+				// shit this complicates intersections but I don't know how TODO
+				Intersection i = intersectionMap.get(cells[0]);
+				
+			} else {
+				// this is actually a feature, and one on the edge, we just have to open it?
+				
+			}
+			
+		} else if( !cells[0].isEmpty() || !cells[1].isEmpty() ){
+			// TODO: also handle the case where we have captured one or two cells!
+			
+		} else {
+			// this is not the side of the board, there are two cells at this edge
+			
+			RichFeature f = featureMap.get(cells[0]);
+			RichFeature g = featureMap.get(cells[1]);
+			
+			if(f == g){
+				// right in the middle of a feature! make two new ones
+				// (f == g == null is imposible because there would be
+				// a safe edge between them!)
+				
+				// make two new features and update collections accordingly
+				
+			} else {
+				// inersection - feature split
+				
+				// actually if f and g are not equal then one of them is
+				// null because it's impossible for them to be different
+				// features
+				
+				Intersection i = intersectionMap.get(cells[0]);
+				if(i == null){
+					i = intersectionMap.get(cells[1]);
+				
+				} else {
+					// g is the feature, f is null
+					f = g;
+				}
+				
+				// now i is the intersection and f is the feature
+			
+				
+			}
+			
+			// other combinations impossible?
+			// feature - feature doesnt happen by definition of features and
+			// intersection - intersection would be separed by a safe edge so
+			// impossible at this stage of the game!
+		}
+		
 	}
 	
-
-
 	
-	public int getMyScore(){ return myScore; }
-	public int getYourScore(){ return yourScore; }
+	public int getMyScore(){
+		return myScore;
+	}
+	
+	public int getYourScore(){
+		return yourScore;
+	}
 	
 	
 
 
+	public int numOpenFeatures() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 	public int numIntersectedShortChains() {
 		// TODO Auto-generated method stub
@@ -107,26 +200,6 @@ public class FeatureSet {
 
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	public void update(Edge edge) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	
 	private void process(ArrayList<RawFeature> features, int piece){
 		
 		// map to store intersections as we encounter them for each cell
@@ -143,13 +216,14 @@ public class FeatureSet {
 					yourScore++;
 				}
 				
-			} else if(raw.classification() == Classification.CHAIN){
+			} else if(raw.classification() == Classification.CHAIN
+						|| raw.classification() == Classification.OPEN){
 				// create new chain feature
 				Chain chain = new Chain(raw.getCells(), this);
 				
 				// link to 0-2 intersection(s)
 				for(Cell end : raw.getEnds()){
-					if(end != null){
+					if(end != null){ // TODO
 						Intersection intersection = map.getOrDefault(end, new Intersection(end, this));
 						
 						intersection.addChain(chain);
@@ -219,6 +293,9 @@ public class FeatureSet {
 					+ raw.classification().name() + " in FeatureSet.process()");
 			}
 		}
+		
+		// store the cell-intersection pairs intersections in the intersectionMap
+		this.intersectionMap = map;
 	}
 	
 	private ArrayList<RawFeature> chainify(Board board){
@@ -251,12 +328,11 @@ public class FeatureSet {
 			f.add(cell);
 			
 		} else if(n == 1){
-			// capturable cell, start an open chain?
-			// i suppose this shouldn't happen most of the time when we're calling chainify ?
-//			f = new OpenChain();
-//			f.add(cell);
-			System.out.println("open chains! take these first?");
-			return null;
+			// capturable cell, start an open chain
+			// (it doesn't make sense for something that's ope not to be a chain)
+			f = new RawFeature(Classification.OPEN);
+			f.add(cell);
+			explore(cell, null, visited, f);
 		
 		} else if(n == 2){
 			// part of a chain/loop/we don't know yet
@@ -296,8 +372,9 @@ public class FeatureSet {
 				continue;
 				
 			} else if (other.numFreeEdges() == 1){
-				// turns out this is an open chain
-				System.out.println("open chains! take these first?");
+				// turns out this is an open chain!
+				// this is safe, in that it will never be replaced by a later observation
+				feature.classify(Classification.OPEN);
 				feature.add(other);
 				
 			} else if(other.numFreeEdges() > 2){
@@ -307,7 +384,7 @@ public class FeatureSet {
 					feature.classify(Classification.LOOP);
 				}
 				
-				// should we add the intersection TO the loop?
+				// should we add the intersection TO the loop? nah
 			
 			} else if (other.numFreeEdges() == 2){
 			
@@ -328,6 +405,7 @@ public class FeatureSet {
 		return;
 	}
 
-	
-
+	public void map(Cell cell, RichFeature feature) {
+		this.featureMap.put(cell, feature);
+	}
 }

@@ -3,7 +3,6 @@ package unimelb.farrugiulian.hexifence.agent;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
-import unimelb.farrugiulian.hexifence.board.features.RawFeature;
 
 public class AgentGreedy extends Agent{
 	
