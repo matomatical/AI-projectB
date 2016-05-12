@@ -2,6 +2,7 @@ package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,12 +11,14 @@ import java.util.Iterator;
 import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
+import unimelb.farrugiulian.hexifence.agent.farrugiulian.Expert;
+import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
 import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
-public class DoubleAgent extends Agent{
+public class DoubleAgent extends Agent implements Expert{
 	
 	private QueueHashSet<Edge> freeScoring;
 	private QueueHashSet<Edge> scoring;
@@ -23,6 +26,25 @@ public class DoubleAgent extends Agent{
 	private HashMap<Edge, Integer> sacr;
 	
 	private int locked = 0;
+	
+	public DoubleAgent() {
+		
+	}
+	
+	public DoubleAgent(Board board, int piece) {
+		init(board.dimension, piece);
+		this.board = board;
+		Edge[] edges = board.getFreeEdges();
+		ArrayList<Edge> freeEdges = new ArrayList<Edge>();
+		for (Edge edge : board.getFreeEdges()) {
+			freeEdges.add(edge);
+		}
+		for (Edge edge : edges) {
+			if (!freeEdges.contains(edge)) {
+				update(edge);
+			}
+		}
+	}
 	
 	@Override
 	public int init(int n, int p){
@@ -40,7 +62,7 @@ public class DoubleAgent extends Agent{
 	}
 	
 	@Override
-	protected void update(Edge edge) {
+	public void update(Edge edge) {
 		
 		// remove this edge from play
 		if (!freeScoring.remove(edge)) {
@@ -113,6 +135,9 @@ public class DoubleAgent extends Agent{
 				}
 				bestValue = Math.max(bestValue, midgameMinimax(safeTmp, false));
 				board.unplace(edge);
+				if (bestValue == 1) {
+					return 1;
+				}
 			}
 		} else {
 			bestValue = Float.POSITIVE_INFINITY;
@@ -132,6 +157,9 @@ public class DoubleAgent extends Agent{
 				}
 				bestValue = Math.min(bestValue, midgameMinimax(safeTmp, true));
 				board.unplace(edge);
+				if (bestValue == 0) {
+					return 0;
+				}
 			}
 		}
 		
@@ -156,7 +184,7 @@ public class DoubleAgent extends Agent{
 		// then select moves that are safe
 		
 		if(safe.size() > 0){
-			if (safe.size() < 15) {
+			if (safe.size() < 20) {
 				Edge bestEdge = null;
 				float bestValue;
 				float testValue;
@@ -181,6 +209,10 @@ public class DoubleAgent extends Agent{
 					if (testValue > bestValue) {
 						bestValue = testValue;
 						bestEdge = edge;
+					}
+					if (bestValue == 1) {
+						System.out.println("Expected value: " + bestValue);
+						return bestEdge;
 					}
 				}
 				System.out.println("Expected value: " + bestValue);
@@ -349,9 +381,6 @@ public class DoubleAgent extends Agent{
 	
 	private int numShortChains() {
 		int numShortChains = 0;
-		if (safe.size() > 0){
-			return -1; // Can't count short chains until board is locked
-		}
 		Stack<Edge> stack = new Stack<Edge>();
 		// Keep taking short chains while keeping count
 		while(takeShortChain(stack) != 0) {
@@ -503,5 +532,16 @@ public class DoubleAgent extends Agent{
 		
 		// n == 0, which means this cell is a dead end for the taking
 		return true;
+	}
+
+	@Override
+	public Edge move() {
+		System.out.println("Move");
+		return getChoice();
+	}
+
+	@Override
+	public boolean transition() {
+		return false;
 	}
 }
