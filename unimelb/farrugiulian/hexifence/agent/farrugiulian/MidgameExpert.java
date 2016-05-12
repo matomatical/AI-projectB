@@ -1,5 +1,7 @@
 package unimelb.farrugiulian.hexifence.agent.farrugiulian;
 
+import java.util.Stack;
+
 import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
@@ -9,7 +11,7 @@ import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
 public class MidgameExpert implements Expert {
 
 	/** edges that represent cells free for the taking */
-	private QueueHashSet<Edge> free;
+	private QueueHashSet<Edge> scoring;
 	private QueueHashSet<Edge> safe;
 
 	private Board board;
@@ -22,7 +24,7 @@ public class MidgameExpert implements Expert {
 		
 		// TODO it'd be nice if we could use the same sets as the opening expert,
 		// as they are already up to date! perhaps merge these two agents?
-		free = new QueueHashSet<Edge>();
+		scoring = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>();
 		
 		// must check each edge for safety / freeness
@@ -43,10 +45,10 @@ public class MidgameExpert implements Expert {
 			
 			if(n == 1){
 				// this edge gives a free cell!
-				free.add(edge);
+				scoring.add(edge);
 				
 				// nothing more to consider
-				break;
+				return;
 				
 			} else if(n == 2){
 				// this edge is not safe on this side!
@@ -65,7 +67,7 @@ public class MidgameExpert implements Expert {
 		
 		// remove this edge from any set it was in
 		// (take advantage of short-circuit evaluation and empty block)
-		if(  safe.remove(edge) || free.remove(edge)  ){}
+		if(  safe.remove(edge) || scoring.remove(edge)  ){}
 		
 		
 		// track all potentially-affected edges
@@ -82,7 +84,7 @@ public class MidgameExpert implements Expert {
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
 				for(Edge e : cell.getFreeEdges()){
-					free.add(e);
+					scoring.add(e);
 				}
 			}
 		}
@@ -101,19 +103,21 @@ public class MidgameExpert implements Expert {
 			
 			if(n == 1){
 				// this was the only edge, this cell's a freebie now
-				free.add(edge);
+				scoring.add(edge);
 				
 			} else if(n == 2){
 				// these edges are no longer free! they're
 				// sacrifices now
 				for(Edge e : cell.getFreeEdges()){
-					free.remove(e);
+					scoring.remove(e);
 				}
 				
 			} else if (n > 2){
 				// these edges are now no longer sacrifices, they're all safe!
 				for(Edge e : cell.getFreeEdges()){
-					safe.add(e);
+					if (e.getOtherCell(cell) == null || e.getOtherCell(cell) != null && e.getOtherCell(cell).numFreeEdges() > 2) {
+						safe.add(e);
+					}
 				}
 			}
 		}
@@ -125,13 +129,13 @@ public class MidgameExpert implements Expert {
 		
 		// select moves that capture a cell, if they exist
 
-		if(free.size() > 0){
-			return free.remove();
+		if(scoring.size() > 0){
+			return scoring.remove();
 		}
 		
 		// if not, there are only safe edges, start a search for the best move
 		SearchPair sp = minimax(piece);
-		
+		System.out.println("Expected value: " + sp.value);
 		return sp.edge;
 		
 		// TODO: PERHAPS CONSIDER SACRIFICING TO SWITCH PARITY,
@@ -150,7 +154,7 @@ public class MidgameExpert implements Expert {
 		
 		// base case, no more searching
 		if(cutoff()){
-			return new SearchPair(null, evaluation());
+			return new SearchPair(null, evaluation((piece == this.piece)));
 		}
 		
 		// otherwise, we have some searching to do!
@@ -171,7 +175,6 @@ public class MidgameExpert implements Expert {
 			safe.remove(edge);
 			
 			int nextPiece = piece;
-			
 			if(edge.numCapturableCells() == 0){
 				// swap pieces unless a cell is captured
 				nextPiece = (piece == Piece.RED) ? Piece.BLUE : Piece.RED;	
@@ -188,13 +191,24 @@ public class MidgameExpert implements Expert {
 			// compare this choice
 			if(best.edge == null){
 				best = sp;
-			} else if(maxing) {
+			}
+			if(maxing) {
 				if(sp.value > best.value){
 					best = sp;
+				}
+				if (best.value == 1) {
+					edge.unplace();
+					this.rewind(edge);
+					return best;
 				}
 			} else {
 				if(sp.value < best.value){
 					best = sp;
+				}
+				if (best.value == 0) {
+					edge.unplace();
+					this.rewind(edge);
+					return best;
 				}
 			}
 				
@@ -225,7 +239,6 @@ public class MidgameExpert implements Expert {
 	}
 	
 	private int evaluation(){
-		
 		// try to approximate the winning / losing margin from this position
 		int eval = 0;
 		
@@ -241,6 +254,10 @@ public class MidgameExpert implements Expert {
 		return eval;
 	}
 	
+	private int evaluation(boolean max){
+		return max ^ ((numShortChains() % 2) == 0) ? 1 : 0;
+	}
+	
 	private boolean cutoff(){
 		return safe.size() == 0; 
 	}
@@ -248,5 +265,160 @@ public class MidgameExpert implements Expert {
 	@Override
 	public boolean transition() {
 		return safe.size() == 0;
+	}
+	
+	private int numShortChains() {
+		int numShortChains = 0;
+		Stack<Edge> stack = new Stack<Edge>();
+		// Keep taking short chains while keeping count
+		while(takeShortChain(stack) != 0) {
+			numShortChains++;
+		}
+		if (board.getFreeEdges().length == 0) {
+			numShortChains++;
+		}
+		// Undo all moves made while testing
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return numShortChains;
+	}
+	
+	private int takeShortChain(Stack<Edge> stack) {
+		Edge[] edges = board.getFreeEdges();
+		
+		if (edges.length == 0) {
+			return 0;
+		}
+		
+		// Find the edge that sacrifices the least number of cells
+		Edge bestEdge = null;
+		int bestCost = 10000;
+		
+		for(int i = 0; i < edges.length; i++){
+			Edge edge = edges[i];
+			// Only consider edges that don't score
+			if (edge.getCells()[0].numFreeEdges() > 1 && (edge.getCells().length == 1
+					|| edge.getCells()[1].numFreeEdges() > 1)){
+				int cost = sacrificeSize(edge);
+				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
+					bestEdge = edge;
+					bestCost = cost;
+				}
+			}
+		}
+		// If this chain is short, take it and return how many cells it had 
+		if (bestCost < 3 || bestCost == 3 && isLoop(bestEdge)) {
+			bestEdge.place(Piece.BLUE);
+			stack.push(bestEdge);
+			//System.out.println(bestEdge.i + "," + bestEdge.j);
+			for(Cell cell : bestEdge.getCells()){
+				sacrifice(cell, stack);
+			}
+			return bestCost;
+		}
+		return 0; // No short chains left
+	}
+
+	private int sacrificeSize(Edge edge) {
+		int size = 0;
+		Stack<Edge> stack = new Stack<Edge>();
+		
+		board.place(edge, Piece.BLUE);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numFreeEdges() != 0){
+				size += sacrifice(cell, stack);
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		
+		return size;
+	}
+
+	private int sacrifice(Cell cell, Stack<Edge> stack){
+		
+		int n = cell.numFreeEdges();
+		
+		if(n > 1){
+			// this cell is not available for capture
+			return 0;
+			
+		} else if (n == 1){
+			for(Edge edge : cell.getEdges()){
+				if(edge.isEmpty()){
+					
+					// claim this piece
+					edge.place(Piece.BLUE);
+					stack.push(edge);
+					
+					// follow opposite cell
+					Cell other = edge.getOtherCell(cell);
+					
+					if(other == null){
+						return 1;
+					}
+					
+					return 1 + sacrifice(other, stack);
+				}	
+			}
+		}
+		
+		// n == 0, which means this cell is a dead end for the taking
+		return 1;
+	}
+	
+	private boolean isLoop(Edge edge) {
+		Stack<Edge> stack = new Stack<Edge>();
+		boolean isLoop = false;
+		
+		board.place(edge, Piece.BLUE);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numFreeEdges() != 0){
+				isLoop |= hasDeadEnd(cell, stack);
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return isLoop;
+	}
+	
+	private boolean hasDeadEnd(Cell cell, Stack<Edge> stack){
+		
+		int n = cell.numFreeEdges();
+		
+		if(n > 1){
+			// this cell is not available for capture
+			return false;
+		} else if (n == 1){
+			for(Edge edge : cell.getEdges()){
+				if(edge.isEmpty()){
+					
+					// claim this piece
+					edge.place(Piece.BLUE);
+					stack.push(edge);
+					
+					// follow opposite cell
+					Cell other = edge.getOtherCell(cell);
+					
+					if(other == null){
+						return false;
+					}
+					
+					return hasDeadEnd(other, stack);
+				}	
+			}
+		}
+		
+		// n == 0, which means this cell is a dead end for the taking
+		return true;
 	}
 }

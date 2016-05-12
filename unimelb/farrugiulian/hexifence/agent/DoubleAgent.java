@@ -34,14 +34,19 @@ public class DoubleAgent extends Agent implements Expert{
 	public DoubleAgent(Board board, int piece) {
 		init(board.dimension, piece);
 		this.board = board;
-		Edge[] edges = board.getFreeEdges();
-		ArrayList<Edge> freeEdges = new ArrayList<Edge>();
-		for (Edge edge : board.getFreeEdges()) {
-			freeEdges.add(edge);
-		}
-		for (Edge edge : edges) {
-			if (!freeEdges.contains(edge)) {
-				update(edge);
+		safe = new QueueHashSet<Edge>();
+		Edge[] freeEdges = board.getFreeEdges();
+		for (Edge edge : freeEdges) {
+			boolean isSafe = true;
+			for (Cell cell : edge.getCells()) {
+				if (cell.numFreeEdges() == 2) {
+					isSafe = false;
+				}
+			}
+			if (isSafe) {
+				safe.add(edge);
+			} else {
+				sacr.put(edge, sacrificeSize(edge));
 			}
 		}
 	}
@@ -221,7 +226,7 @@ public class DoubleAgent extends Agent implements Expert{
 			return safe.remove();
 		}
 		
-		if (locked == 0 && safe.size() == 0) {
+		if (locked == 0) {
 			Stack<Edge> stack = new Stack<Edge>();
 			consumeAll(stack);
 			int numShortChains = numShortChains();
@@ -536,7 +541,6 @@ public class DoubleAgent extends Agent implements Expert{
 
 	@Override
 	public Edge move() {
-		System.out.println("Move");
 		return getChoice();
 	}
 
