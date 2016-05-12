@@ -11,6 +11,7 @@ public class AgentFarrugiulian extends Agent {
 	}
 	private GameStage stage = GameStage.OPENING;
 	private Expert expert;
+	private long startTime;
 	
 	@Override
 	public int init(int n, int p){
@@ -22,7 +23,7 @@ public class AgentFarrugiulian extends Agent {
 		// parent init success!
 		
 		// initialise the first expert
-		this.expert = new OpeningExpert(super.board, 20);
+		this.expert = new OpeningExpert(super.board, 18);
 		
 		// return the same value as superclass
 		return 0;
@@ -33,6 +34,11 @@ public class AgentFarrugiulian extends Agent {
 		
 		this.expert.update(edge);
 		
+		if (board.numFreeEdges() == 0) {
+			long time = (System.nanoTime() - startTime) / 1000000;
+			System.out.println("Time taken was " + (time / 1000.0) + " seconds");
+		}
+		
 		if(expert.transition()){
 			if(stage == GameStage.OPENING){
 				System.out.println("Entering midgame");
@@ -40,6 +46,8 @@ public class AgentFarrugiulian extends Agent {
 				
 				expert = new MidgameExpert(super.board, super.piece);
 				
+				System.out.println("Starting minimax with " + (board.numEdges() - board.numFreeEdges()) + " edges left");
+				startTime = System.nanoTime();
 			} else if(stage == GameStage.MIDGAME){
 				System.out.println("Entering endgame");
 				stage = GameStage.ENDGAME;

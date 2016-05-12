@@ -17,6 +17,8 @@ public class MidgameExpert implements Expert {
 	private Board board;
 	private int piece;
 	
+	private long startTime;
+	
 	public MidgameExpert(Board board, int piece) {
 	
 		this.board = board;
@@ -133,6 +135,7 @@ public class MidgameExpert implements Expert {
 			return scoring.remove();
 		}
 		
+		startTime = System.currentTimeMillis();
 		// if not, there are only safe edges, start a search for the best move
 		SearchPair sp = minimax(piece);
 		System.out.println("Expected value: " + sp.value);
@@ -172,6 +175,12 @@ public class MidgameExpert implements Expert {
 		Edge[] edges = safe.toArray(new Edge[safe.size()]);
 		
 		for(Edge edge : edges){
+			if (System.currentTimeMillis() - startTime > 5000) {
+				System.out.println("Taking too long, returning");
+				return new SearchPair(edge, maxing ? 0 : 1);
+			}
+			
+			
 			safe.remove(edge);
 			
 			int nextPiece = piece;
