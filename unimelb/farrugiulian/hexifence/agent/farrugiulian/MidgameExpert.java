@@ -4,6 +4,7 @@ import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.*;
+import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
 
 public class MidgameExpert implements Expert {
 
@@ -11,10 +12,12 @@ public class MidgameExpert implements Expert {
 	private QueueHashSet<Edge> free;
 	private QueueHashSet<Edge> safe;
 
+	private Board board;
 	private int piece;
 	
 	public MidgameExpert(Board board, int piece) {
 	
+		this.board = board;
 		this.piece = piece;
 		
 		// TODO it'd be nice if we could use the same sets as the opening expert,
@@ -23,14 +26,14 @@ public class MidgameExpert implements Expert {
 		safe = new QueueHashSet<Edge>();
 		
 		// must check each edge for safety / freeness
-			
+		
 		for(Edge edge : board.getFreeEdges()){
 			store(edge);
 		}
 	}
 	
 	private void store(Edge edge){
-
+		
 		// flag to check safety of both sides
 		boolean safeEdge = true;
 		
@@ -56,12 +59,13 @@ public class MidgameExpert implements Expert {
 			safe.add(edge);
 		}
 	}
+	
 	@Override
 	public void update(Edge edge) {
 		
 		// remove this edge from any set it was in
-		// (take advantage of lazy evaluation here)
-		if(safe.remove(edge) || free.remove(edge)){}
+		// (take advantage of short-circuit evaluation and empty block)
+		if(  safe.remove(edge) || free.remove(edge)  ){}
 		
 		
 		// track all potentially-affected edges
@@ -96,7 +100,7 @@ public class MidgameExpert implements Expert {
 			int n = cell.numFreeEdges();
 			
 			if(n == 1){
-				// this was the only edge, it's a freebie now
+				// this was the only edge, this cell's a freebie now
 				free.add(edge);
 				
 			} else if(n == 2){
@@ -121,16 +125,13 @@ public class MidgameExpert implements Expert {
 		
 		// select moves that capture a cell, if they exist
 
-		// PERHAPS CONSIDER SACRIFICING (IF ALL EVALUATIONS TURNS OUT BAD) TO SWITCH PARITY?
 		if(free.size() > 0){
 			return free.remove();
 		}
 		
 		// if not, there are only safe edges, start a search for the best move
-		System.out.println("starting minimax!");
 		SearchPair sp = minimax(piece);
-		System.out.println("ending minimax!");
-		System.out.println("returning: "+sp.edge.toString());
+		
 		return sp.edge;
 		
 		// TODO: PERHAPS CONSIDER SACRIFICING TO SWITCH PARITY,
@@ -142,7 +143,7 @@ public class MidgameExpert implements Expert {
 		//	// search sacrifices? 
 		// }
 		
-		// TODO: TRY MONTE-CARLO TO
+		// TODO: TRY MONTE-CARLO TOO
 	}
 
 	private SearchPair minimax(int piece){
@@ -224,9 +225,20 @@ public class MidgameExpert implements Expert {
 	}
 	
 	private int evaluation(){
-		// TODO
 		
-		return 0;
+		// try to approximate the winning / losing margin from this position
+		int eval = 0;
+		
+		FeatureSet fs = new FeatureSet(this.board, this.piece);
+		
+		eval += fs.getMyScore();
+		eval -= fs.getYourScore();
+		
+		// try to statically figure out how many pieces we can win from lockdown
+		// (feel free to use something linear time here, creating the featureset
+		// is already linear time)
+		
+		return eval;
 	}
 	
 	private boolean cutoff(){
