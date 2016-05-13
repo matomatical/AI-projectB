@@ -28,6 +28,7 @@ public class MidgameExpert implements Expert {
 		
 		// TODO it'd be nice if we could use the same sets as the opening expert,
 		// as they are already up to date! perhaps merge these two agents?
+		// AHA! lets refactor this into an 'EdgeSet' that contains all these methods we're using :)
 		scoring = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>();
 		

@@ -2,7 +2,7 @@ package unimelb.farrugiulian.hexifence.board;
 
 import aiproj.hexifence.Piece;
 
-public abstract class Index {
+public abstract class Index implements Comparable<Edge> {
 	
 	public final int i, j;	// public immutable
 	int color;				// package access
@@ -34,5 +34,24 @@ public abstract class Index {
 	@Override
 	public String toString(){
 		return "(" + i + ", " + j + ")";
+	}
+	
+	@Override
+	public int compareTo(Edge that) {
+		
+		if(this.i < that.i){
+			// this is less
+			return -1;
+		
+		} else if(this.i > that.i){
+			// this is more
+			return 1;
+			
+		} else {
+			// i's ar equal, it's down to the j's
+			// return negative if this is less, etc
+			return this.j - that.j; 
+		}
+		
 	}
 }

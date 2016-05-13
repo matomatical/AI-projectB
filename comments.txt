@@ -1,5 +1,7 @@
 AI assignment
 
+Marks:
+
 4 - quality of code and comments (comments.txt? ask lida)
 
 4 - correctness and reliability (detecting and not making illegal moves)
@@ -10,25 +12,16 @@ AI assignment
 
 comments.txt
 	
-	- skype discussions and screenshots and paper and 	  stuff (46 + 5 + 59 + 39 mins so far, plus 57 + 2:53)
+	- skype discussions and screenshots and paper and stuff (46 + 5 + 59 + 39 mins so far, plus 57 + 2:53)
 
 	- talking about visualisation engine
 
 	- approach to opening (when to transition)
 	- approach to midgame (search? αβ? MC? nims? nega?)
-		- evaluation function based on a fast playout? 		  parity?
+		- evaluation function based on a fast playout? parity?
 	- approach to endgame
 
 	- explain other parts of our code?
 
 
-
 'after we finished talking about 4-loops, julian was struggling with for-loops'
-
-						> it's iterable
-						> should be able to for
-						  each
-> as in
-> for each (Edge edge : scoring)
-						> drop the 'each'
-						> and yes

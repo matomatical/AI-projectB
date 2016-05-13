@@ -311,4 +311,12 @@ public class Board implements VisualBoard{
 	}
 
 	
+	public static int other(int piece) {
+		return (piece == Piece.RED) ? Piece.BLUE : Piece.RED;
+	}
+
+	public static String name(int piece){
+		return (piece == Piece.RED) ? "RED" : "BLUE";
+	}
+	
 }
