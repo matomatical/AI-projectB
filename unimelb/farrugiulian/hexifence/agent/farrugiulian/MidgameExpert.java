@@ -10,14 +10,16 @@ import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
 
 public class MidgameExpert implements Expert {
 
+	/** variables for keeping track of time during search */
+	private static long TIMEOUT = 5000;
+	private long startTime;
+	
 	/** edges that represent cells free for the taking */
 	private QueueHashSet<Edge> scoring;
 	private QueueHashSet<Edge> safe;
 
 	private Board board;
 	private int piece;
-	
-	private long startTime;
 	
 	public MidgameExpert(Board board, int piece) {
 	
@@ -115,7 +117,7 @@ public class MidgameExpert implements Expert {
 				}
 				
 			} else if (n > 2){
-				// these edges are now no longer sacrifices, they're all safe!
+				// these edges are now no longer sacrifices, they're all safe! TODO 79 characters
 				for(Edge e : cell.getFreeEdges()){
 					if (e.getOtherCell(cell) == null || e.getOtherCell(cell) != null && e.getOtherCell(cell).numFreeEdges() > 2) {
 						safe.add(e);
@@ -137,9 +139,18 @@ public class MidgameExpert implements Expert {
 		
 		startTime = System.currentTimeMillis();
 		// if not, there are only safe edges, start a search for the best move
-		SearchPair sp = minimax(piece);
-		System.out.println("Expected value: " + sp.value);
-		return sp.edge;
+		try {
+			SearchPair sp = minimax(null, piece);
+			System.err.println("Search complete! Expected winner: " + Board.name(sp.piece));
+			return sp.edge;
+		} catch(TimeoutException e){
+			
+			System.err.println("Aborting search due to timeout! "
+					+ "playing last hopeful piece " + e.edge.toString());
+			return e.edge;
+		}
+		
+		
 		
 		// TODO: PERHAPS CONSIDER SACRIFICING TO SWITCH PARITY,
 		//       IF ALL EVALUATIONS TURN OUT BAD?
@@ -153,119 +164,120 @@ public class MidgameExpert implements Expert {
 		// TODO: TRY MONTE-CARLO TOO
 	}
 
-	private SearchPair minimax(int piece){
+	
+	// alright let's rethink our search
+	
+	/*
+	minimax(last edge played, piece to play):
+	
+		// base cases
+		if cutoff:
+			return (null, winning piece) // really all we care about is who wins
+
+		if timeout:
+			throw timeout exception?
 		
-		// base case, no more searching
-		if(cutoff()){
-			return new SearchPair(null, evaluation((piece == this.piece)));
+		result = null
+		
+		// recursive case
+		for all edges => last edge played // (for all edges: if edge < last edge played: continue, ...)
+			
+			play edge
+			
+			pair = minimax(edge, (captured) ? piece : other piece)
+			
+			unplay edge
+
+			if pair == null:
+				// no pieces down this path! skip this edge
+				continue
+			
+			pair.edge = this
+			if pair.piece == piece
+				return pair
+			else // (pair.piece == other piece)
+				// this move is not winning, continue searching
+				result = pair
+			
+		// if we make it out of this loop, no pieces were winning for this player
+		// (either there were no smaller edges or there were no winning edges)
+		
+		return result
+		
+		// (null if there were no possibilities)
+	 */
+	
+	private SearchPair minimax(Edge last, int piece) throws TimeoutException{
+		
+		// keep track of time
+		if (System.currentTimeMillis() - startTime > TIMEOUT) {
+			System.out.println("Taking too long, returning");
+			// return new SearchPair(edge, maxing ? 0 : 1);
+			throw new TimeoutException(last);
 		}
 		
-		// otherwise, we have some searching to do!
+		// base case, are we at lockdown?
+		if(cutoff()){
+			return new SearchPair(null, winner(piece));
+		}
 		
-		// try to maximise if we're paying OUR piece,
-		// otherwise try to minimise
+		// otherwise, we still have some searching to do!
 		
-		boolean maxing = (piece == this.piece);
+		// for each edge greater than this edge,
+		// who is the winning player if we play that edge?
+
+		SearchPair result = null;
 		
-		// try all of the safe edges
-		
-		SearchPair best = new SearchPair(null, 0);
-		
-		// copy for safe iterating
-		Edge[] edges = safe.toArray(new Edge[safe.size()]);
-		
-		for(Edge edge : edges){
-			if (System.currentTimeMillis() - startTime > 5000) {
-				System.out.println("Taking too long, returning");
-				return new SearchPair(edge, maxing ? 0 : 1);
+		for(Edge edge : safe.toArray(new Edge[safe.size()])){
+			if(last != null && last.compareTo(edge) <= 0){
+				continue;
 			}
 			
-			
-			safe.remove(edge);
-			
-			int nextPiece = piece;
-			if(edge.numCapturableCells() == 0){
-				// swap pieces unless a cell is captured
-				nextPiece = (piece == Piece.RED) ? Piece.BLUE : Piece.RED;	
-			}
-			
-			// make this move
+			// play edge
 			edge.place(piece);
 			this.update(edge);
 			
-			// recursive part
-			SearchPair sp = minimax(nextPiece);
-			sp.edge = edge;
+			// recursively search for result
+			SearchPair pair = minimax(edge, Board.other(piece));
+			// piece will swap, we're only trying safe edges right now!
 			
-			// compare this choice
-			if(best.edge == null){
-				best = sp;
-			}
-			if(maxing) {
-				if(sp.value > best.value){
-					best = sp;
-				}
-				if (best.value == 1) {
-					edge.unplace();
-					this.rewind(edge);
-					return best;
-				}
-			} else {
-				if(sp.value < best.value){
-					best = sp;
-				}
-				if (best.value == 0) {
-					edge.unplace();
-					this.rewind(edge);
-					return best;
-				}
-			}
-				
-			// unmake this move
+			// unplay edge
 			edge.unplace();
 			this.rewind(edge);
+
+			if(pair == null){
+				// no pieces down this path! skip this edge
+				continue;
+			} else {
+				pair.edge = edge;
+				if (pair.piece == piece){
+					return pair; // found a winning move for this player!
+				} else {
+					// this move is not a winner, continue the searching!
+					result = pair;
+				}
+			}
+			
 		}
 		
-		// return the best option
-		return best;
+		return result; 
+	}
+	
+	private int winner(int piece) {
+		// it's piece's turn, who is going to win? Piece.BLUE or Piece.RED?
+		return (piece == Piece.BLUE) ? Piece.RED : Piece.BLUE;
 	}
 
-//	private class Path {
-//		public Stack<Edge> edges = new Stack<Edge>();
-//		public final int value;
-//		public Path(int value){
-//			this.value = value;
-//		}
-//	}
-	
+
 	private class SearchPair {
 		public Edge edge;
-		public int value;
+		public int piece;
 		SearchPair(Edge edge, int value){
 			this.edge = edge;
-			this.value = value;
+			this.piece = piece;
 		}
 	}
 	
-	private int evaluation(){
-		// try to approximate the winning / losing margin from this position
-		int eval = 0;
-		
-		FeatureSet fs = new FeatureSet(this.board, this.piece);
-		
-		eval += fs.getMyScore();
-		eval -= fs.getYourScore();
-		
-		// try to statically figure out how many pieces we can win from lockdown
-		// (feel free to use something linear time here, creating the featureset
-		// is already linear time)
-		
-		return eval;
-	}
-	
-	private int evaluation(boolean max){
-		return max ^ ((numShortChains() % 2) == 0) ? 1 : 0;
-	}
 	
 	private boolean cutoff(){
 		return safe.size() == 0; 
@@ -275,6 +287,21 @@ public class MidgameExpert implements Expert {
 	public boolean transition() {
 		return safe.size() == 0;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	private int numShortChains() {
 		int numShortChains = 0;
@@ -431,3 +458,125 @@ public class MidgameExpert implements Expert {
 		return true;
 	}
 }
+
+
+//
+//private SearchPair minimaxOLD(Edge last, int piece) throws TimeoutException{
+//
+//	
+//	
+//	
+//	// base case, no more searching
+//	if(cutoff()){
+//		return new SearchPair(null, evaluation((piece == this.piece)));
+//	
+//	}
+//	
+//	// otherwise, we have some searching to do!
+//	
+//	// try to maximise if we're paying OUR piece,
+//	// otherwise try to minimise
+//	
+//	boolean maxing = (piece == this.piece);
+//	
+//	// try all of the safe edges
+//	
+//	//SearchPair best = new SearchPair(null, 0);
+//	SearchPair best = null;
+//	
+//	// copy for safe iterating
+//	Edge[] edges = safe.toArray(new Edge[safe.size()]);
+//	
+//	for(Edge edge : edges){
+//		
+//		// only consider edges that are greater than the last edge
+//		// (this ensures that each combination is only evaluated
+//		//  once, in increasing order by edges)
+//		if(last == null || last.compareTo(edge) < 0){
+//			
+//			// if it's less, skip this edge
+//			continue;
+//		}
+//		
+//		// otherwise, actually try this edge
+//		
+//		safe.remove(edge);
+//		
+//		// swap pieces unless a cell is captured
+//		int nextPiece = piece;
+//		if(edge.numCapturableCells() == 0){
+//			nextPiece = (piece == Piece.RED) ? Piece.BLUE : Piece.RED;	
+//		}
+//		
+//		// make this move
+//		edge.place(piece);
+//		this.update(edge);
+//		
+//		// recursively evaluate this edge
+//		SearchPair sp = minimaxOLD(edge, nextPiece);
+//		
+//		// if the function returned null, either we're out
+//		// of time, or there were no edges down this way?
+//		if(sp == null){
+//			
+//			// TODO
+//			continue;
+//		}
+//		
+//		sp.edge = edge;
+//		
+//		// compare this choice
+//		if(best == null){
+//			best = sp;
+//		}
+//		if(maxing) {
+//			if(sp.value > best.value){
+//				best = sp;
+//			}
+//			if (best.value == 1) {
+//				edge.unplace();
+//				this.rewind(edge);
+//				return best;
+//			}
+//		} else {
+//			if(sp.value < best.value){
+//				best = sp;
+//			}
+//			if (best.value == 0) {
+//				edge.unplace();
+//				this.rewind(edge);
+//				return best;
+//			}
+//		}
+//			
+//		// unmake this move
+//		edge.unplace();
+//		this.rewind(edge);
+//		
+//	}
+//	
+//	// return the best option (will still be null if no remaining edges were less)
+//	return best;
+//}
+
+
+//private class Path {
+//	public Stack<Edge> edges = new Stack<Edge>();
+//	public final int value;
+//	public Path(int value){
+//		this.value = value;
+//	}
+//}
+
+//private class SearchPair {
+//	public Edge edge;
+//	public int value;
+//	SearchPair(Edge edge, int value){
+//		this.edge = edge;
+//		this.value = value;
+//	}
+//}
+
+//private int evaluation(boolean max){
+//	return max ^ ((numShortChains() % 2) == 0) ? 1 : 0;
+//}
