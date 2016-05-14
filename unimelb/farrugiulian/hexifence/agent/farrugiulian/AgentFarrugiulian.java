@@ -23,7 +23,7 @@ public class AgentFarrugiulian extends Agent {
 		// parent init success!
 		
 		// initialise the first expert
-		this.expert = new OpeningExpert(super.board, 29);
+		this.expert = new OpeningExpert(super.board, 19);
 		
 		// TODO : remove
 		startTime = System.nanoTime();
@@ -49,7 +49,7 @@ public class AgentFarrugiulian extends Agent {
 				
 				expert = new MidgameExpert(super.board, super.piece);
 				
-				System.out.println("Starting minimax with " + (board.numEdges() - board.numFreeEdges()) + " edges left");
+				System.out.println("Starting minimax after " + (board.numEdges() - board.numFreeEdges()) + " edges");
 			} else if(stage == GameStage.MIDGAME){
 				System.out.println("Entering endgame");
 				stage = GameStage.ENDGAME;
