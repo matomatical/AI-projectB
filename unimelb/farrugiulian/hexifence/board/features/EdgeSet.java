@@ -10,30 +10,51 @@ import com.matomatical.util.QueueHashSet;
 import unimelb.farrugiulian.hexifence.board.*;
 
 public class EdgeSet {
+	
+	/** Set of edges that capture a cell with no consequences to the
+	 * capturability of neighbouring cells */
+	private QueueHashSet<Edge> free = new QueueHashSet<Edge>();
 
-	private QueueHashSet<Edge> free; // (capturing with no consequences)
-	private QueueHashSet<Edge> safe; // (non-capturing with no consequences)
+	/** Set of edges that capture a cell and in doing so, also make
+	 * a neighbouring cell captureable*/
+	private QueueHashSet<Edge> capturing = new QueueHashSet<Edge>();
 	
-	private QueueHashSet<Edge> capturing;
-	private QueueHashSet<Edge> sacrificing;
+	/** Set of edges that do not capture a cell or make any cells captureable*/
+	private QueueHashSet<Edge> safe = new QueueHashSet<Edge>();
 	
-	/** Create a new EdgeSet from an <b>empty</b> board
-	 * If the board privided is not empty, this constructor will fail to
-	 * produce a correct EdgeSet
-	 * @param an <b>empty</b> board to use to make this EdgeSet
+	/** Set of edges that do not capture a cell but do make neighbouring cells
+	 * captureable (sacrificing those cells) */
+	private QueueHashSet<Edge> sacrificing = new QueueHashSet<Edge>();
+	
+	/** Create a new EdgeSet from a board. Randomises the order edges are
+	 *  inserted, causing removal order to be effectively randomised
+	 *  (because removal order is actually FIFO)
+	 * @param a board to use to make this EdgeSet
 	 **/
-	public EdgeSet(Board board){
+	public EdgeSet(Board board, boolean shuffling){
 		
-		// shuffle the list of edges to result in random removal order
-		long seed = System.nanoTime();
 		List<Edge> edges = Arrays.asList(board.getEdges());
-		Collections.shuffle(edges, new Random(seed));
 		
-		// on an empty board, all edges are safe
-		safe = new QueueHashSet<Edge>(edges);
-		free = new QueueHashSet<Edge>();
-		capturing = new QueueHashSet<Edge>();
-		sacrificing = new QueueHashSet<Edge>();
+		if(shuffling){
+			// shuffle the list of edges to result in random removal order
+			long seed = System.nanoTime();
+			Collections.shuffle(edges, new Random(seed));			
+		}
+		
+		if(board.numEmptyEdges() == board.numEdges()){
+			// the board is empty!
+			// on an empty board, all edges are safe
+			safe = new QueueHashSet<Edge>(edges);
+		
+		} else {
+			// the board is not empty!
+			// now we have to classify every edge ourselves...
+			for(Edge edge : edges){
+				// these edges may already be taken but reclassify will just
+				// skip them if that's the case!
+				reclassify(edge);
+			}
+		}
 	}
 	
 	/** Update the feature set in response to the placing of an edge
@@ -70,6 +91,9 @@ public class EdgeSet {
 		}
 	}
 
+	/** Remove this edge from all collections it may or may not be in
+	 * @param edge the edge to remove
+	 **/
 	private void remove(Edge edge){
 		safe.remove(edge);
 		free.remove(edge);
@@ -77,6 +101,9 @@ public class EdgeSet {
 		sacrificing.remove(edge);	
 	}
 	
+	/** Remove this edge from all collections it may or may not be in
+	 * @param edge the edge to remove
+	 **/
 	private void reclassify(Edge edge){
 		
 		// remove this edge from any set it was in, so that we can find the
@@ -84,7 +111,7 @@ public class EdgeSet {
 		this.remove(edge);
 		
 		if (! edge.isEmpty()){
-			// this edge is no longer free! don't put it in any collection
+			// this edge is no longer free! don't put it in ANY collection
 			return;
 			
 		} else if (edge.numCapturableCells() == 0){
@@ -112,11 +139,12 @@ public class EdgeSet {
 				return;
 			}
 			
-			// otherwise, it could be either, let's check out 
+			// otherwise, it could be either, let's check out the
+			// non-captureable cell
 			
 			for(Cell cell : edge.getCells()){
 				if(cell.numEmptyEdges() == 1){
-					// this is the cell we are looking for
+					// this is the cell we are looking for (captureable)
 					
 					Cell other = edge.getOtherCell(cell);
 					
@@ -134,20 +162,6 @@ public class EdgeSet {
 			}
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	public boolean hasSafeEdges(){
 		return safe.size() > 0;
