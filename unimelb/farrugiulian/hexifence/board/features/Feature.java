@@ -70,19 +70,52 @@ public class Feature {
 	}
 
 	
-	
-	public void consume(){
+	/** e.g. 4-chain.consume(Piece.RED, true)
+	 * will modify the feature set so that BLUE opens the chain, RED scores two
+	 * points and then double-boxes the last 2 cells leaving them for BLUE
+	 * (net advantage change is 0)
+	 **/
+	public void consume(int piece, boolean boxing){
 		
+		// well, make sure we're not dealing with an intersection
+		if(this.type == Classification.INTERSECTION){
+			System.err.println("Can't consume an intersection!");
+			return;
+		}
+		
+		if(this.type == Classification.ISO_LOOP){
+			// fs.remove(this);
+			
+		}
+		
+		if(this.type == Classification.CHAIN){
+			// consuming a chain
+		}
 	}
 	
-	/**
-	 * @param the 
-	 * @return the best edge to play
+	/** Selecting a feature for opening by returning an Edge that can be used
+	 *  to open it. 
+	 *  @param baiting True if you would like to return an edge that offers the
+	 *  oponent a chance to double box or false for you would like to prevent
+	 *  double boxing (actually, that only works for two-chains
+	 *  @return an edge to play to open this feature, or null if this feature
+	 *  is an intersection.
 	 **/
 	public Edge choose(boolean baiting){
-		// for NOW we're just returning ANY old edge to open this feature
-		// but later we'll be a little more careful ;)
-		return this.cells.element().getEmptyEdges()[0];
+		
+		if(this.type == Classification.INTERSECTION){
+			return null;
+			
+		} else {
+			if(baiting){
+				
+			} else {
+				
+			}
+			// for NOW we're just returning ANY old edge to open this feature
+			// but later we'll be a little more careful ;)	
+			return this.cells.element().getEmptyEdges()[0];
+		}		
 	}
 	
 	/** 

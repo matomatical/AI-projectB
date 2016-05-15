@@ -20,11 +20,17 @@ public class FeatureSet {
 		return features.get(i);
 	}
 	
+	public boolean isEmpty(){
+		return features.isEmpty();
+	}
 	
 	int piece, advantage = 0;
 	
 	public int score(int piece){
 		return advantage * ( (piece == this.piece) ? 1 : -1 );
+	}
+	public void score(int piece, int score){
+		advantage += score * ( (piece == this.piece) ? 1 : -1 );
 	}
 	
 	
@@ -85,12 +91,7 @@ public class FeatureSet {
 		// see if this cell has already been captured
 		if(n == 0){
 			// captured cell
-			if(cell.getColor() == piece){
-				this.advantage++;
-			} else {
-				this.advantage--;
-			}
-			
+			score(cell.getColor(), 1);
 			return;
 		}
 		
