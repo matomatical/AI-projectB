@@ -10,20 +10,26 @@ import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
 public abstract class Agent implements VisualPlayer{
-
+	/** Which piece the agent uses */
 	protected int piece;
+	/** Which piece the agent's opponent uses */
 	protected int opponent;
 	
+	/** The current score of the agent */
 	protected int myScore = 0;
+	/** The current score of the agent's opponent */
 	protected int yourScore = 0;
 	
+	/** The current state of action of the agent */
 	private enum PlayerState {
 		STARTING, MOVING, WAITING, CHEATED;
 	}
 	private PlayerState state;
 	
+	/** Representation of the game board */
 	protected Board board;
 	
+	/** Initializes the agent */
 	@Override
 	public int init(int n, int p) {
 		
@@ -41,12 +47,14 @@ public abstract class Agent implements VisualPlayer{
 		return 0;
 	}
 	
-	// the only part of agent behavior that actually changes
+	/** Queries the agent for its next move */
 	protected abstract Edge getChoice();
-	
+
+	/** Notifies the agent that an edge has been placed on the board */
 	// let the agent know that a piece has been placed on the board
 	protected abstract void update(Edge edge);
 	
+	/** Makes the agent's next move */
 	@Override
 	public Move makeMove(){
 		
@@ -98,6 +106,7 @@ public abstract class Agent implements VisualPlayer{
 		return m;
 	}
 
+	/** Makes the agent's opponent's next move */
 	@Override
 	public int opponentMove(Move m) {
 
@@ -150,6 +159,7 @@ public abstract class Agent implements VisualPlayer{
 		}
 	}
 	
+	/** Checks if there is a winner */
 	@Override
 	public int getWinner() {
 		
@@ -179,11 +189,13 @@ public abstract class Agent implements VisualPlayer{
 		}
 	}
 
+	/** Prints an ASCII representation of the game board */
 	@Override
 	public void printBoard(PrintStream output) {
 		board.printTo(output);
 	}
 	
+	/** Returns a board that can be visually displayed */
 	@Override
 	public VisualBoard getBoard(){
 		return board;

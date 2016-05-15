@@ -7,21 +7,33 @@ import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.*;
 
 public class AgentFarrugiulian extends Agent {
-
+	/** Enter the midgame state when the number of safe edges fall below this value */
 	private static final int MIDGAME_SEARCH_DEPTH = 19;
-	private static final int MIDGAME_SEARCH_TIMEOUT = 5000; // milliseconds
+	/**How long to minimax search safe edges for during midgame before giving up */
+	private static final int MIDGAME_SEARCH_TIMEOUT = 5000;
 	
+	/** Finite state machine. During the opening state, the agent greedily makes
+	 * scoring moves, then safe moves. During the midgame state, the agent
+	 * greedily makes scoring moves, then does a approximate adversarial search
+	 * for the best safe move. During the endgame state, the agent greedily makes
+	 * scoring moves that have no consequences, then plays out the game
+	 * heuristically using an adversarial search for the best way to break up
+	 * intersections between chains and loops.
+	 **/
 	private enum GameStage{
 		OPENING, MIDGAME, ENDGAME;
 	}
 	
+	/** State variable, initially in the opening state */
 	private GameStage stage = GameStage.OPENING;
 	
+	/** Classification of the empty edges on the board */
 	private EdgeSet es;
-	private FeatureSet fs;
 	
-	private long clock; // for search timing
+	/** For timing the midgame searches */
+	private long clock;
 	
+	/** Initializes the agent */
 	@Override
 	public int init(int n, int p){
 		if(super.init(n, p) != 0){
@@ -37,9 +49,9 @@ public class AgentFarrugiulian extends Agent {
 		return 0;
 	}
 	
+	/** Notifies the agent that an edge has been placed on the board */
 	@Override
 	protected void update(Edge edge) {
-		
 		// maintain the edge set
 		this.es.update(edge);
 		
@@ -57,6 +69,7 @@ public class AgentFarrugiulian extends Agent {
 		}
 	}
 	
+	/** Queries the agent for its next move */
 	@Override
 	public Edge getChoice(){
 	
@@ -79,6 +92,7 @@ public class AgentFarrugiulian extends Agent {
 		}
 	}
 	
+	/** Returns the move to be made by the agent in the opening state */
 	public Edge openingMove(){
 		
 		// select any captureable edges, if they exist
@@ -99,6 +113,7 @@ public class AgentFarrugiulian extends Agent {
 		return null;
 	}
 	
+	/** Returns the move to be made by the agent in the midgame state */
 	private Edge midgameMove() {
 		
 		// select any captureable edges, if they exist
@@ -110,11 +125,12 @@ public class AgentFarrugiulian extends Agent {
 		// if not, do some searching to find a winning safe edge!
 		
 		clock = System.currentTimeMillis();
-		SearchPair<Edge> sp =  midgameMinimax(piece);
+		SearchPair<Edge> sp = safeEdgeSearch(piece);
 		System.out.println("Predicted winner: " + Board.name(sp.piece));
 		return sp.choice;
 	}
 	
+	/** Returns the move to be made by the agent in the endgame state */
 	private Edge endgameMove() {
 		Stack<Edge> stack = new Stack<Edge>();
 		consumeAll(stack);
@@ -214,7 +230,12 @@ public class AgentFarrugiulian extends Agent {
 		}*/
 	}
 	
-	private SearchPair<Edge> midgameMinimax(int piece) {
+	/** Performs a minimax search on the safe edges on the board until there are
+	 * none left
+	 * @param piece
+	 * @return
+	 **/
+	private SearchPair<Edge> safeEdgeSearch(int piece) {
 		
 		// base case / cutoff test; are we at lockdown?
 		if(! this.es.hasSafeEdges()){
@@ -243,7 +264,7 @@ public class AgentFarrugiulian extends Agent {
 			
 			// recursively search for result
 			// piece will always swap, since we're only trying safe edges!
-			SearchPair<Edge> pair = midgameMinimax(Board.other(piece));
+			SearchPair<Edge> pair = safeEdgeSearch(Board.other(piece));
 			
 			// unplay edge
 			edge.unplace();
@@ -261,6 +282,11 @@ public class AgentFarrugiulian extends Agent {
 		return result; 
 	}
 	
+	/** Performs a minimax search on the intersected sacrifice features on the
+	 * board until there are none left
+	 * @param piece
+	 * @return
+	 **/
 	/*private SearchPair<RichFeature> featureSearch(FeatureSet features, int piece) {
 		int numIntersectedSacrifices = numIntersectedSacrifices(features);
 		if (numIntersectedSacrifices == 0) {
@@ -289,12 +315,21 @@ public class AgentFarrugiulian extends Agent {
 		return result;
 	}*/
 	
+	/** Evaluation function for the midgame search
+	 * @param piece
+	 *       Which piece plays next
+	 * @return
+	 *       The piece expected to win
+	 **/
 	private int winner(int piece){
-		// pessimistic winner function
 		//return Board.other(piece);
 		return (piece == Piece.BLUE) ^ (numShortChains() % 2 == 0) ? Piece.BLUE : Piece.RED;
 	}
 	
+	/** Return type class for searches in the midgame and endgame
+	 * @param <Type>
+	 *       The type of the choices being made in the search
+	 */
 	private class SearchPair<Type> {
 		public Type choice;
 		public int piece;
