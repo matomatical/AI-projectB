@@ -141,7 +141,13 @@ public class MidgameExpert implements Expert {
 		
 		startTime = System.currentTimeMillis();
 		// if not, there are only safe edges, start a search for the best move
-		SearchPair sp = moveSearch();
+		SearchPair sp;
+		try {
+			sp = minimax(piece);
+		} catch (TimeoutException e) {
+			System.out.println(e.getMessage());
+			sp = new SearchPair(e.edge, Board.other(piece));
+		}
 		System.err.println("Search complete! Expected winner: " + Board.name(sp.piece));
 		return sp.edge;
 		
@@ -201,20 +207,10 @@ public class MidgameExpert implements Expert {
 		// (null if there were no possibilities)
 	 */
 	
-	private SearchPair moveSearch() {
-		safeArray = safe.toArray(new Edge[safe.size()]);
-		try {
-			return minimax(0, piece);
-		} catch (TimeoutException e) {
-			System.out.println(e.getMessage());
-			return new SearchPair(safeArray[safeArray.length - 1], Board.other(piece));
-		}
-	}
-	
-	private SearchPair minimax(int start, int piece) throws TimeoutException{
+	private SearchPair minimax(int piece) throws TimeoutException{
 		// keep track of time
 		if (System.currentTimeMillis() - startTime > TIMEOUT) {
-			throw new TimeoutException();
+			throw new TimeoutException(null);
 		}
 		
 		// base case, are we at lockdown?
@@ -223,19 +219,10 @@ public class MidgameExpert implements Expert {
 		}
 		
 		// otherwise, we still have some searching to do!
-		
-		// for each edge greater than this edge,
-		// who is the winning player if we play that edge?
-
+		// for each edge who is the winning player if we play that edge?
 		SearchPair result = null;
-		
-		for(int i = start; i < safeArray.length; i++){
-		//for(int i = 0; i < safeArray.length; i++){
-			Edge edge = safeArray[i];
-			if(!safe.contains(edge)){
-				continue;
-			}
-			
+		Edge[] safeArray = safe.toArray(new Edge[safe.size()]);
+		for(Edge edge : safeArray){
 			// play edge
 			edge.place(piece);
 			this.update(edge);
@@ -243,32 +230,27 @@ public class MidgameExpert implements Expert {
 			// recursively search for result
 			SearchPair pair;
 			try {
-				pair = minimax(i + 1, Board.other(piece));
+				// piece will swap, we're only trying safe edges right now!
+				pair = minimax(Board.other(piece));
 			}
 			catch(TimeoutException e) {
+				// unplay edge, and return the last edge as it is the most promising
 				edge.unplace();
 				this.rewind(edge);
-				throw new TimeoutException();
+				throw new TimeoutException(safeArray[safeArray.length - 1]);
 			}
-			// piece will swap, we're only trying safe edges right now!
 			
 			// unplay edge
 			edge.unplace();
 			this.rewind(edge);
-
-			if(pair == null){
-				// no pieces down this path! skip this edge
-				continue;
-			} else {
-				pair.edge = edge;
-				if (pair.piece == piece){
-					return pair; // found a winning move for this player!
-				} else {
-					// this move is not a winner, continue the searching!
-					result = pair;
-				}
-			}
 			
+			pair.edge = edge;
+			if (pair.piece == piece){
+				return pair; // found a winning move for this player!
+			} else {
+				// this move is not a winner, continue the searching!
+				result = pair;
+			}
 		}
 		
 		return result; 
