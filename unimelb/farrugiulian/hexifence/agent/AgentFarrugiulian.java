@@ -7,18 +7,23 @@ import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.*;
 
 public class AgentFarrugiulian extends Agent {
-	/** Enter the midgame state when the number of safe edges fall below this value */
+	/** Enter the midgame state when the number of safe edges fall below this
+	 *  value
+	 **/
 	private static final int MIDGAME_SEARCH_DEPTH = 19;
-	/**How long to minimax search safe edges for during midgame before giving up */
+	
+	/** How long to minimax search safe edges for during midgame before giving
+	 *  up (in ms)
+	 **/
 	private static final int MIDGAME_SEARCH_TIMEOUT = 5000;
 	
-	/** Finite state machine. During the opening state, the agent greedily makes
-	 * scoring moves, then safe moves. During the midgame state, the agent
-	 * greedily makes scoring moves, then does a approximate adversarial search
-	 * for the best safe move. During the endgame state, the agent greedily makes
-	 * scoring moves that have no consequences, then plays out the game
-	 * heuristically using an adversarial search for the best way to break up
-	 * intersections between chains and loops.
+	/** Finite state machine. During the opening state, the agent greedily
+	 *  makes scoring moves, then safe moves. During the midgame state, the
+	 *  agent greedily makes scoring moves, then does a approximate adversarial
+	 *  search for the best safe move. During the endgame state, the agent
+	 *  greedily makes scoring moves that have no consequences, then plays out
+	 *  the game heuristically using an adversarial search for the best way to
+	 *  break up intersections between chains and loops.
 	 **/
 	private enum GameStage{
 		OPENING, MIDGAME, ENDGAME;

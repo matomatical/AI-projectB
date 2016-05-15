@@ -2,7 +2,6 @@ package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.List;
 import java.util.Stack;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,8 +13,6 @@ import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
-import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
-import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
 public class DoubleAgent extends Agent implements Expert{
 	

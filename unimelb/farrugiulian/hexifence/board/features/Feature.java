@@ -69,12 +69,25 @@ public class Feature {
 		return ends;
 	}
 
+	
+	
 	public void consume(){
-		// 
+		
 	}
 	
+	/**
+	 * @param the 
+	 * @return the best edge to play
+	 **/
+	public Edge choose(boolean baiting){
+		// for NOW we're just returning ANY old edge to open this feature
+		// but later we'll be a little more careful ;)
+		return this.cells.element().getEmptyEdges()[0];
+	}
 	
-	
+	/** 
+	 * @return An ArrayList of Features
+	 **/
 	public ArrayList<Feature> getFeatures(){
 		if(type == Classification.INTERSECTION){
 			// this is an intersection! returns its neighbouring features

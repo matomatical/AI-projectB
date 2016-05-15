@@ -16,15 +16,17 @@ public class FeatureSet {
 		return features;
 	}
 	
-	public Feature getFeatures(int i){
+	public Feature getFeature(int i){
 		return features.get(i);
 	}
+	
 	
 	int piece, advantage = 0;
 	
 	public int score(int piece){
 		return advantage * ( (piece == this.piece) ? 1 : -1 );
 	}
+	
 	
 	private HashMap<Cell, Feature> map = new HashMap<Cell, Feature>();
 	
@@ -35,6 +37,7 @@ public class FeatureSet {
 	protected Feature unmap(Cell cell){
 		return this.map.get(cell);
 	}
+
 	
 	public FeatureSet(Board board, int piece){
 		
