@@ -369,7 +369,7 @@ public class DoubleAgent extends Agent implements Expert{
 		int capturable = 0;
 		for (Edge edge : scoring){
 			if (edge.isEmpty()){
-				edge.place(super.piece);
+				edge.place(super.opponent);
 				stack.push(edge);
 				capturable++;
 				if (edge.getCells()[0].numEmptyEdges() > 0){
