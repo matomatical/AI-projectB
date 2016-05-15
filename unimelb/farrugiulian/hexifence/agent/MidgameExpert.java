@@ -1,4 +1,4 @@
-package unimelb.farrugiulian.hexifence.agent.farrugiulian;
+package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.Stack;
 

@@ -1,3 +1,4 @@
+package unimelb.farrugiulian.hexifence.agent;
 
 	/*
 	minimax(last edge played, piece to play):

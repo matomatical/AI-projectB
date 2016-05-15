@@ -11,7 +11,6 @@ import java.util.Iterator;
 import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
-import unimelb.farrugiulian.hexifence.agent.farrugiulian.Expert;
 import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;

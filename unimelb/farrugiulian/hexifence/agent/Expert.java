@@ -1,4 +1,4 @@
-package unimelb.farrugiulian.hexifence.agent.farrugiulian;
+package unimelb.farrugiulian.hexifence.agent;
 
 import unimelb.farrugiulian.hexifence.board.Edge;
 

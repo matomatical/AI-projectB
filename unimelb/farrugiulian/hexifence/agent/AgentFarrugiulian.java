@@ -1,7 +1,5 @@
-package unimelb.farrugiulian.hexifence.agent.farrugiulian;
+package unimelb.farrugiulian.hexifence.agent;
 
-import unimelb.farrugiulian.hexifence.agent.Agent;
-import unimelb.farrugiulian.hexifence.agent.DoubleAgent;
 import unimelb.farrugiulian.hexifence.board.*;
 
 public class AgentFarrugiulian extends Agent {
