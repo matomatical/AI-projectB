@@ -12,18 +12,23 @@ import unimelb.farrugiulian.hexifence.board.*;
 public class EdgeSet {
 	
 	/** Set of edges that capture a cell with no consequences to the
-	 * capturability of neighbouring cells */
+	 *  capturability of neighbouring cells
+	 **/
 	private QueueHashSet<Edge> free = new QueueHashSet<Edge>();
 
 	/** Set of edges that capture a cell and in doing so, also make
-	 * a neighbouring cell captureable*/
+	 *  a neighbouring cell captureable
+	 **/
 	private QueueHashSet<Edge> capturing = new QueueHashSet<Edge>();
 	
-	/** Set of edges that do not capture a cell or make any cells captureable*/
+	/** Set of edges that do not capture a cell, or make any of their
+	 *  neighbouring cells captureable
+	 **/
 	private QueueHashSet<Edge> safe = new QueueHashSet<Edge>();
 	
 	/** Set of edges that do not capture a cell but do make neighbouring cells
-	 * captureable (sacrificing those cells) */
+	 *  captureable (sacrificing those cells)
+	 **/
 	private QueueHashSet<Edge> sacrificing = new QueueHashSet<Edge>();
 	
 	/** Create a new EdgeSet from a board. Randomises the order edges are

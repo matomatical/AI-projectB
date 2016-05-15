@@ -3,11 +3,8 @@ package unimelb.farrugiulian.hexifence.agent;
 import java.util.Stack;
 
 import aiproj.hexifence.Piece;
-import unimelb.farrugiulian.hexifence.agent.EndgameExpert.FeaturePair;
 import unimelb.farrugiulian.hexifence.board.*;
-import unimelb.farrugiulian.hexifence.board.features.EdgeSet;
-import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
-import unimelb.farrugiulian.hexifence.board.features.RichFeature;
+import unimelb.farrugiulian.hexifence.board.features.*;
 
 public class AgentFarrugiulian extends Agent {
 
@@ -34,7 +31,7 @@ public class AgentFarrugiulian extends Agent {
 		
 		// parent init success!
 		
-		this.es = new EdgeSet(super.board);
+		this.es = new EdgeSet(super.board, true);
 		
 		// return the same value as superclass
 		return 0;
@@ -220,13 +217,14 @@ public class AgentFarrugiulian extends Agent {
 			
 			// do we still have time?
 			if(System.currentTimeMillis() - clock > MIDGAME_SEARCH_TIMEOUT){
-				return new SearchPair<Edge>(safes[safes.length - 1],
-														Board.other(piece));
+				// nope, give up and return an edge we have not tried yet
+				// (that way at least it is not definitely a losing edge)
+				return new SearchPair<Edge>(safes[safes.length - 1], piece);
 			}
 			
 			// play edge
 			edge.place(piece);
-			this.update(edge);
+			es.update(edge);
 			
 			// recursively search for result
 			// piece will always swap, since we're only trying safe edges!

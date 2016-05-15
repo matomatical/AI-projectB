@@ -88,10 +88,9 @@ public class FeatureSet {
 		
 		this.intersectionMap = map;
 	}
-		
+	
 	public void update(Edge edge) {
 		
-	
 		// hmm, we'll need to find out which feature this affects,
 		// and preferably do so quickly! perhaps we need a cell -> feature map!
 		
