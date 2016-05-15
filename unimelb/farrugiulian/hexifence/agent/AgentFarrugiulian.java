@@ -3,7 +3,6 @@ package unimelb.farrugiulian.hexifence.agent;
 import java.util.Stack;
 
 import aiproj.hexifence.Piece;
-import unimelb.farrugiulian.hexifence.agent.EndgameExpert.FeaturePair;
 import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.EdgeSet;
 import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
@@ -34,7 +33,7 @@ public class AgentFarrugiulian extends Agent {
 		
 		// parent init success!
 		
-		this.es = new EdgeSet(super.board);
+		this.es = new EdgeSet(super.board, true);
 		
 		// return the same value as superclass
 		return 0;
@@ -46,7 +45,7 @@ public class AgentFarrugiulian extends Agent {
 		// maintain the edge set
 		this.es.update(edge);
 		
-		// possibly transition to next game stage 
+		// possibly transition to next game stage
 		if(this.stage == GameStage.OPENING){
 			if(this.es.numSafeEdges() < MIDGAME_SEARCH_DEPTH){
 				System.err.println("Entering midgame");
@@ -113,13 +112,27 @@ public class AgentFarrugiulian extends Agent {
 		// if not, do some searching to find a winning safe edge!
 		
 		clock = System.currentTimeMillis();
-		return midgameMinimax(piece).choice;
-//		System.err.println("Search complete! Predicted winner: " + Board.name(sp.piece));
+		SearchPair<Edge> sp =  midgameMinimax(piece);
+		System.out.println("Predicted winner: " + Board.name(sp.piece));
+		return sp.choice;
 	}
 	
 	private Edge endgameMove() {
+		Stack<Edge> stack = new Stack<Edge>();
+		consumeAll(stack);
+		int numShortChains = numShortChains();
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		System.out.print(Board.name(piece) + " has " + numShortChains + " short chains left and should ");
+		if (numShortChains % 2 == 0) {
+			System.out.println("lose");
+		} else {
+			System.out.println("win");
+		}
+		while (true) {}
 		// If we have edges we can capture
-		if (es.hasCapturingEdges()) {
+		/*if (es.hasCapturingEdges()) {
 			// Count the maximum number of cells we can take
 			Stack<Edge> stack = new Stack<Edge>();
 			int capturable = consumeAll(stack);
@@ -200,7 +213,7 @@ public class AgentFarrugiulian extends Agent {
 		} else {
 			// We should lose so make a baiting sacrifice
 			return sp.choice.baitOpen();
-		}
+		}*/
 	}
 	
 	private SearchPair<Edge> midgameMinimax(int piece) {
@@ -220,13 +233,13 @@ public class AgentFarrugiulian extends Agent {
 			
 			// do we still have time?
 			if(System.currentTimeMillis() - clock > MIDGAME_SEARCH_TIMEOUT){
-				return new SearchPair<Edge>(safes[safes.length - 1],
-														Board.other(piece));
+				System.out.println("Timeout, returning");
+				return new SearchPair<Edge>(safes[safes.length - 1], piece);
 			}
 			
 			// play edge
 			edge.place(piece);
-			this.update(edge);
+			es.update(edge);
 			
 			// recursively search for result
 			// piece will always swap, since we're only trying safe edges!
@@ -248,7 +261,7 @@ public class AgentFarrugiulian extends Agent {
 		return result; 
 	}
 	
-	private SearchPair<RichFeature> featureSearch(FeatureSet features, int piece) {
+	/*private SearchPair<RichFeature> featureSearch(FeatureSet features, int piece) {
 		int numIntersectedSacrifices = numIntersectedSacrifices(features);
 		if (numIntersectedSacrifices == 0) {
 			// Simple parity evaluation right now
@@ -274,11 +287,12 @@ public class AgentFarrugiulian extends Agent {
 		}
 		
 		return result;
-	}
+	}*/
 	
 	private int winner(int piece){
 		// pessimistic winner function
-		return Board.other(piece);
+		//return Board.other(piece);
+		return (piece == Piece.BLUE) ^ (numShortChains() % 2 == 0) ? Piece.BLUE : Piece.RED;
 	}
 	
 	private class SearchPair<Type> {
