@@ -1,8 +1,13 @@
 package unimelb.farrugiulian.hexifence.agent;
 
+import java.util.Stack;
+
+import aiproj.hexifence.Piece;
+import unimelb.farrugiulian.hexifence.agent.EndgameExpert.FeaturePair;
 import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.EdgeSet;
 import unimelb.farrugiulian.hexifence.board.features.FeatureSet;
+import unimelb.farrugiulian.hexifence.board.features.RichFeature;
 
 public class AgentFarrugiulian extends Agent {
 
@@ -113,8 +118,89 @@ public class AgentFarrugiulian extends Agent {
 	}
 	
 	private Edge endgameMove() {
-		// TODO Auto-generated method stub
-		return null;
+		// If we have edges we can capture
+		if (es.hasCapturingEdges()) {
+			// Count the maximum number of cells we can take
+			Stack<Edge> stack = new Stack<Edge>();
+			int capturable = consumeAll(stack);
+			while(!stack.isEmpty()){
+				board.unplace(stack.pop());
+			}
+			
+			// Check if we are in a position to double (double) box
+			boolean isLoop = isLoop(es.getCapturingEdge());
+			if (capturable == 2 || capturable == 4 && isLoop) {
+				// Decide whether we should actually double box with a search
+				consumeAll(stack);
+				FeatureSet fs = new FeatureSet(board, super.piece);
+				while(!stack.isEmpty()){
+					board.unplace(stack.pop());
+				}
+				SearchPair<RichFeature> sp = featureSearch(fs, super.piece);
+				if (sp.piece == super.piece) {
+					// If double boxing makes us win, then double box (duh)
+					Cell[] cells = es.getCapturingEdge().getCells();
+					Cell cell;
+					// Get the cell that has the edge that can double box
+					if (cells[0].numEmptyEdges() == 2) {
+						cell = cells[0];
+					} else {
+						cell = cells[1];
+					}
+					// Figure out which edge can double box
+					if (cell.getEmptyEdges()[0] == es.getCapturingEdge()){
+						return cell.getEmptyEdges()[1];
+					} else {
+						return cell.getEmptyEdges()[0];
+					}
+				} else {
+					// If double boxing does not make us win, then take the cells
+					// Sure it may not make us win either, but perhaps the opponent does
+					// not need to throw as hard to let us win if we get more score now
+					return es.getCapturingEdge();
+				}
+			}
+			
+			// We cannot double box, so take edges by the following priority:
+			// Short loops, then long loops, then short chains, then long chains
+			// Keep in mind that all free cells are automatically taken
+			Edge bestEdge = null;
+			isLoop = false;
+			int captureSize = 10000;
+			for (Edge edge : es.getCapturingEdges()) {
+				int sacrificeSize = sacrificeSize(edge);
+				boolean isCurrentLoop = isLoop(edge);
+				if ((isCurrentLoop || !isLoop ) && sacrificeSize < captureSize) {
+					bestEdge = edge;
+					captureSize = sacrificeSize;
+					isLoop = isCurrentLoop;
+				}
+			}
+			return bestEdge;
+		}
+		
+		// We do not have edges we can capture, so we need to make a sacrifice
+		FeatureSet fs = new FeatureSet(board, super.piece);
+		SearchPair<RichFeature> sp = featureSearch(fs, super.piece);
+		if (sp.choice == null) {
+			if (sp.piece == super.piece) {
+				// No more intersected sacrifices and we should win
+				// Get the smallest chain
+				sp.choice = fs.getSmallestChain();
+			} else {
+				// No more intersected sacrifices and we should lose
+				// Get a chain such that the last sacrifice is not a loop
+				// (not too sure how to do this just yet so just get the smallest chain)
+				sp.choice = fs.getSmallestChain();
+			}
+		}
+		if (sp.piece == super.piece) {
+			// We should win so make the sacrifice securely
+			return sp.choice.secureOpen();
+		} else {
+			// We should lose so make a baiting sacrifice
+			return sp.choice.baitOpen();
+		}
 	}
 	
 	private SearchPair<Edge> midgameMinimax(int piece) {
@@ -162,6 +248,34 @@ public class AgentFarrugiulian extends Agent {
 		return result; 
 	}
 	
+	private SearchPair<RichFeature> featureSearch(FeatureSet features, int piece) {
+		int numIntersectedSacrifices = numIntersectedSacrifices(features);
+		if (numIntersectedSacrifices == 0) {
+			// Simple parity evaluation right now
+			int numSacrifices = numSacrifices(features);
+			int winningPiece = (piece == Piece.BLUE) ^ (numSacrifices % 2 == 0) ? Piece.BLUE : Piece.RED;
+			return new SearchPair<RichFeature>(null, winningPiece);
+		}
+		
+		SearchPair<RichFeature> result = null;
+		for (int i = 0; i < numIntersectedSacrifices; i++) {
+			FeatureSet featuresTmp = new FeatureSet(features);
+			takeFeature(getIntersectedSacrifices(featuresTmp).get(i));
+			
+			SearchPair<RichFeature> pair = featureSearch(featuresTmp, Board.other(piece));
+			
+			pair.choice = getIntersectedSacrifices(features).get(i);
+			if (pair.piece == piece){
+				return pair; // found a winning move for this player!
+			} else {
+				// this move is not a winner, continue the searching!
+				result = pair;
+			}
+		}
+		
+		return result;
+	}
+	
 	private int winner(int piece){
 		// pessimistic winner function
 		return Board.other(piece);
@@ -174,5 +288,191 @@ public class AgentFarrugiulian extends Agent {
 			this.choice = choice;
 			this.piece = piece;
 		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// Old helper functions
+	
+	//Works ONLY if the scoring QueueHashSet is accurate
+	private int consumeAll(Stack<Edge> stack){
+		int capturable = 0;
+		for (Edge edge : es.getCapturingEdges()){
+			if (edge.isEmpty()){
+				edge.place(super.opponent);
+				stack.push(edge);
+				capturable++;
+				if (edge.getCells()[0].numEmptyEdges() > 0){
+					capturable += sacrifice(edge.getCells()[0], stack);
+				}
+				if (edge.getCells().length == 2 && edge.getCells()[1].numEmptyEdges() > 0){
+					capturable += sacrifice(edge.getCells()[1], stack);
+				}
+			}
+		}
+		return capturable;
+	}
+	
+	private int numShortChains() {
+		int numShortChains = 0;
+		Stack<Edge> stack = new Stack<Edge>();
+		// Keep taking short chains while keeping count
+		while(takeShortChain(stack) != 0) {
+			numShortChains++;
+		}
+		if (board.getEmptyEdges().length == 0) {
+			numShortChains++;
+		}
+		// Undo all moves made while testing
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return numShortChains;
+	}
+	
+	private int takeShortChain(Stack<Edge> stack) {
+		Edge[] edges = board.getEmptyEdges();
+		
+		if (edges.length == 0) {
+			return 0;
+		}
+		
+		// Find the edge that sacrifices the least number of cells
+		Edge bestEdge = null;
+		int bestCost = 10000;
+		
+		for(int i = 0; i < edges.length; i++){
+			Edge edge = edges[i];
+			// Only consider edges that don't score
+			if (edge.getCells()[0].numEmptyEdges() > 1 && (edge.getCells().length == 1
+					|| edge.getCells()[1].numEmptyEdges() > 1)){
+				int cost = sacrificeSize(edge);
+				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
+					bestEdge = edge;
+					bestCost = cost;
+				}
+			}
+		}
+		// If this chain is short, take it and return how many cells it had 
+		if (bestCost < 3 || bestCost == 3 && isLoop(bestEdge)) {
+			bestEdge.place(super.opponent);
+			stack.push(bestEdge);
+			//System.out.println(bestEdge.i + "," + bestEdge.j);
+			for(Cell cell : bestEdge.getCells()){
+				sacrifice(cell, stack);
+			}
+			return bestCost;
+		}
+		return 0; // No short chains left
+	}
+
+	private int sacrificeSize(Edge edge) {
+		int size = 0;
+		Stack<Edge> stack = new Stack<Edge>();
+		
+		board.place(edge, super.opponent);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numEmptyEdges() != 0){
+				size += sacrifice(cell, stack);
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		
+		return size;
+	}
+
+	private int sacrifice(Cell cell, Stack<Edge> stack){
+		
+		int n = cell.numEmptyEdges();
+		
+		if(n > 1){
+			// this cell is not available for capture
+			return 0;
+			
+		} else if (n == 1){
+			for(Edge edge : cell.getEdges()){
+				if(edge.isEmpty()){
+					
+					// claim this piece
+					edge.place(super.opponent);
+					stack.push(edge);
+					
+					// follow opposite cell
+					Cell other = edge.getOtherCell(cell);
+					
+					if(other == null){
+						return 1;
+					}
+					
+					return 1 + sacrifice(other, stack);
+				}	
+			}
+		}
+		
+		// n == 0, which means this cell is a dead end for the taking
+		return 1;
+	}
+	
+	private boolean isLoop(Edge edge) {
+		Stack<Edge> stack = new Stack<Edge>();
+		boolean isLoop = false;
+		
+		board.place(edge, super.opponent);
+		stack.push(edge);
+		
+		for(Cell cell : edge.getCells()){
+			if (cell.numEmptyEdges() != 0){
+				isLoop |= hasDeadEnd(cell, stack);
+			}
+		}
+		
+		while(!stack.isEmpty()){
+			board.unplace(stack.pop());
+		}
+		return isLoop;
+	}
+	
+	private boolean hasDeadEnd(Cell cell, Stack<Edge> stack){
+		
+		int n = cell.numEmptyEdges();
+		
+		if(n > 1){
+			// this cell is not available for capture
+			return false;
+		} else if (n == 1){
+			for(Edge edge : cell.getEdges()){
+				if(edge.isEmpty()){
+					
+					// claim this piece
+					edge.place(super.opponent);
+					stack.push(edge);
+					
+					// follow opposite cell
+					Cell other = edge.getOtherCell(cell);
+					
+					if(other == null){
+						return false;
+					}
+					
+					return hasDeadEnd(other, stack);
+				}	
+			}
+		}
+		
+		// n == 0, which means this cell is a dead end for the taking
+		return true;
 	}
 }
