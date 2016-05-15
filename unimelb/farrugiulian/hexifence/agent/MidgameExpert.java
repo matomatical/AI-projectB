@@ -35,7 +35,7 @@ public class MidgameExpert implements Expert {
 		
 		// must check each edge for safety / freeness
 		
-		for(Edge edge : board.getFreeEdges()){
+		for(Edge edge : board.getEmptyEdges()){
 			store(edge);
 		}
 	}
@@ -47,7 +47,7 @@ public class MidgameExpert implements Expert {
 		
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 1){
 				// this edge gives a free cell!
@@ -79,17 +79,17 @@ public class MidgameExpert implements Expert {
 		// track all potentially-affected edges
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 2){
 				// these edges are no longer safe!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					safe.remove(e);
 				}
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					scoring.add(e);
 				}
 			}
@@ -105,7 +105,7 @@ public class MidgameExpert implements Expert {
 		
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 1){
 				// this was the only edge, this cell's a freebie now
@@ -114,14 +114,14 @@ public class MidgameExpert implements Expert {
 			} else if(n == 2){
 				// these edges are no longer free! they're
 				// sacrifices now
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					scoring.remove(e);
 				}
 				
 			} else if (n > 2){
 				// these edges are now no longer sacrifices, they're all safe! TODO 79 characters
-				for(Edge e : cell.getFreeEdges()){
-					if (e.getOtherCell(cell) == null || e.getOtherCell(cell) != null && e.getOtherCell(cell).numFreeEdges() > 2) {
+				for(Edge e : cell.getEmptyEdges()){
+					if (e.getOtherCell(cell) == null || e.getOtherCell(cell) != null && e.getOtherCell(cell).numEmptyEdges() > 2) {
 						safe.add(e);
 					}
 				}
@@ -303,7 +303,7 @@ public class MidgameExpert implements Expert {
 		while(takeShortChain(stack) != 0) {
 			numShortChains++;
 		}
-		if (board.getFreeEdges().length == 0) {
+		if (board.getEmptyEdges().length == 0) {
 			numShortChains++;
 		}
 		// Undo all moves made while testing
@@ -314,7 +314,7 @@ public class MidgameExpert implements Expert {
 	}
 	
 	private int takeShortChain(Stack<Edge> stack) {
-		Edge[] edges = board.getFreeEdges();
+		Edge[] edges = board.getEmptyEdges();
 		
 		if (edges.length == 0) {
 			return 0;
@@ -327,8 +327,8 @@ public class MidgameExpert implements Expert {
 		for(int i = 0; i < edges.length; i++){
 			Edge edge = edges[i];
 			// Only consider edges that don't score
-			if (edge.getCells()[0].numFreeEdges() > 1 && (edge.getCells().length == 1
-					|| edge.getCells()[1].numFreeEdges() > 1)){
+			if (edge.getCells()[0].numEmptyEdges() > 1 && (edge.getCells().length == 1
+					|| edge.getCells()[1].numEmptyEdges() > 1)){
 				int cost = sacrificeSize(edge);
 				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
 					bestEdge = edge;
@@ -357,7 +357,7 @@ public class MidgameExpert implements Expert {
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				size += sacrifice(cell, stack);
 			}
 		}
@@ -371,7 +371,7 @@ public class MidgameExpert implements Expert {
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture
@@ -409,7 +409,7 @@ public class MidgameExpert implements Expert {
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				isLoop |= hasDeadEnd(cell, stack);
 			}
 		}
@@ -422,7 +422,7 @@ public class MidgameExpert implements Expert {
 	
 	private boolean hasDeadEnd(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture

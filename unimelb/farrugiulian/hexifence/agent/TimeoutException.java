@@ -13,4 +13,8 @@ public class TimeoutException extends Exception {
 		super("Time is up!");
 		this.edge = edge;
 	}
+	
+	public TimeoutException(){
+		this(null);
+	}
 }

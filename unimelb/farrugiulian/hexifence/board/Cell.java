@@ -14,7 +14,7 @@ public class Cell extends Index {
 		edges[nedges++] = edge;
 	}
 
-	public int numFreeEdges(){
+	public int numEmptyEdges(){
 		int n = 0;
 		
 		// loop and count edges that are still free
@@ -30,9 +30,9 @@ public class Cell extends Index {
 		return edges;
 	}
 	
-	public Edge[] getFreeEdges(){
+	public Edge[] getEmptyEdges(){
 		
-		Edge[] edges = new Edge[this.numFreeEdges()];
+		Edge[] edges = new Edge[this.numEmptyEdges()];
 		int n = 0;
 		
 		for(Edge edge : this.edges){

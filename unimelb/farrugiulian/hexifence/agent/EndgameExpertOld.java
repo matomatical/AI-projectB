@@ -58,10 +58,10 @@ public class EndgameExpertOld extends Agent {
 		
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 2){
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					// these edges are no longer safe!
 					if(safe.remove(e)){
 						sacr.put(e, sacrificeSize(e));
@@ -73,12 +73,12 @@ public class EndgameExpertOld extends Agent {
 				}
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				Edge e = cell.getFreeEdges()[0];
+				Edge e = cell.getEmptyEdges()[0];
 				if(sacr.remove(e) != null){
 					// But what type of free? It depends on whether the other cell is
 					// a sacrifice or not
 					if (e.getOtherCell(cell) != null
-							&& e.getOtherCell(cell).numFreeEdges() == 2) {
+							&& e.getOtherCell(cell).numEmptyEdges() == 2) {
 						scoring.add(e);
 					} else {
 						freeScoring.add(e);
@@ -227,7 +227,7 @@ public class EndgameExpertOld extends Agent {
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				size += sacrifice(cell, stack);
 			}
 		}
@@ -241,7 +241,7 @@ public class EndgameExpertOld extends Agent {
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture

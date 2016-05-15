@@ -46,11 +46,11 @@ public class AgentGreedy extends Agent{
 		
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 2){
 				// these edges are no longer safe!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					if(safe.remove(e)){
 						sacr.put(e, sacrificeSize(e));
 					}
@@ -58,7 +58,7 @@ public class AgentGreedy extends Agent{
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					if(sacr.remove(e) != null){
 						free.add(e);
 					}
@@ -84,7 +84,7 @@ public class AgentGreedy extends Agent{
 		
 		// then and only then, select a move that will lead to a small sacrifice
 	
-		Edge[] edges = board.getFreeEdges();
+		Edge[] edges = board.getEmptyEdges();
 		
 		// find the best option
 		
@@ -111,7 +111,7 @@ public class AgentGreedy extends Agent{
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				size += sacrifice(cell, stack);
 			}
 		}
@@ -125,7 +125,7 @@ public class AgentGreedy extends Agent{
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture

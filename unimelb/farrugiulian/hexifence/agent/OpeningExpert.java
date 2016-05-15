@@ -29,7 +29,6 @@ public class OpeningExpert implements Expert {
 	private final int transitionThreshold;
 	
 	/** Makes a new {@link OpeningExpert}
-	 *  
 	 * @param board The board for this agent to watch
 	 **/
 	public OpeningExpert(Board board, int transitionThreshold){
@@ -45,7 +44,7 @@ public class OpeningExpert implements Expert {
 		
 		// the expert's collections
 		
-		if(board.numFreeEdges() == board.numEdges()){
+		if(board.numEmptyEdges() == board.numEdges()){
 			
 			// all edges are safe
 			free = new QueueHashSet<Edge>();
@@ -65,7 +64,7 @@ public class OpeningExpert implements Expert {
 				
 				for(Cell cell : edge.getCells()){
 					
-					int n = cell.numFreeEdges();
+					int n = cell.numEmptyEdges();
 					
 					if(n == 1){
 						// this edge gives a free cell!
@@ -100,17 +99,17 @@ public class OpeningExpert implements Expert {
 		// track all potentially-affected edges
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 2){
 				// these edges are no longer safe!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					safe.remove(e);
 				}
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					free.add(e);
 				}
 			}

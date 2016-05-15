@@ -22,7 +22,7 @@ public class Edge extends Index {
 			
 			// claim nearby pieces
 			for(Cell cell : this.cells){
-				if(cell != null && cell.numFreeEdges() == 1){
+				if(cell != null && cell.numEmptyEdges() == 1){
 					cell.color = piece;
 				}
 			}
@@ -57,7 +57,7 @@ public class Edge extends Index {
 		// otherwise, let's count the ones we'd capture if we placed here
 		int n = 0;
 		for(Cell cell : cells){
-			if(cell != null && cell.numFreeEdges() == 1){
+			if(cell != null && cell.numEmptyEdges() == 1){
 				n++;
 			}
 		}

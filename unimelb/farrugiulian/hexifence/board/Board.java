@@ -169,32 +169,32 @@ public class Board implements VisualBoard{
 	}
 
 	/** Count how many edges have not been taken
-	 * @return the number of edges that are free
+	 * @return the number of edges that are empty
 	 */
-	public int numFreeEdges(){
+	public int numEmptyEdges(){
 		int n = 0;
 		
 		// loop through all edges
 		for(Edge e : getEdges()){
 			if(e.isEmpty()){
-				n++; // count free ones
+				n++; // count empty ones
 			}
 		}
 		return n;
 	}
 	
 	/** Generate an array of edges on the board that have not been placed on
-	 * @return an array of all the free edges from the board
+	 * @return an array of all the empty edges from the board
 	 */
-	public Edge[] getFreeEdges(){
-		// we'll have to count the number of free edges
-		Edge[] freeEdges = new Edge[numFreeEdges()];
+	public Edge[] getEmptyEdges(){
+		// we'll have to count the number of empty edges
+		Edge[] freeEdges = new Edge[numEmptyEdges()];
 		
 		int n = 0;
 		
 		for(Edge e : getEdges()){
 			if(e.isEmpty()){
-				// add free edges to output buffer
+				// add empty edges to output buffer
 				freeEdges[n++] = e;
 			}
 		}
@@ -318,5 +318,4 @@ public class Board implements VisualBoard{
 	public static String name(int piece){
 		return (piece == Piece.RED) ? "RED" : "BLUE";
 	}
-	
 }

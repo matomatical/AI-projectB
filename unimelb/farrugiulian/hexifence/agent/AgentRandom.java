@@ -16,7 +16,7 @@ public class AgentRandom extends Agent{
 	
 	@Override
 	public Edge getChoice(){
-		Edge[] edges = board.getFreeEdges();
+		Edge[] edges = board.getEmptyEdges();
 		return edges[rng.nextInt(edges.length)];
 	}
 

@@ -25,3 +25,20 @@ comments.txt
 
 
 'after we finished talking about 4-loops, julian was struggling with for-loops'
+
+
+
+// TODO: PERHAPS CONSIDER SACRIFICING TO SWITCH PARITY,
+//       IF ALL EVALUATIONS TURN OUT BAD?
+// 		 HMM, CAN SACRIFICING EARLY ACTUALLY MAKE A DIFFERENCE?
+
+// if(sp.value >= 0){
+//	return sp.edge;
+// } else {
+//	// search sacrifices? 
+// }
+
+// it goes deeper, we'll need to search within minimax too or we'll
+// be blind to sacrifices by the opponent at each level (damn!)
+
+// TODO: TRY MONTE-CARLO TOO, IF WE HAVE TIME

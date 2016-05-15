@@ -318,7 +318,7 @@ public class FeatureSet {
 	
 	private RawFeature classify(Cell cell, HashSet<Cell> visited) {
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		RawFeature f;
 		
@@ -354,7 +354,7 @@ public class FeatureSet {
 
 	private void explore(Cell cell, Cell parent, HashSet<Cell> visited, RawFeature feature) {
 		
-		Edge[] edges = cell.getFreeEdges();
+		Edge[] edges = cell.getEmptyEdges();
 		
 		// find the rest of the chain
 		for(Edge edge : edges){
@@ -371,13 +371,13 @@ public class FeatureSet {
 				// we're looking backwards
 				continue;
 				
-			} else if (other.numFreeEdges() == 1){
+			} else if (other.numEmptyEdges() == 1){
 				// turns out this is an open chain!
 				// this is safe, in that it will never be replaced by a later observation
 				feature.classify(Classification.OPEN);
 				feature.add(other);
 				
-			} else if(other.numFreeEdges() > 2){
+			} else if(other.numEmptyEdges() > 2){
 				// we've found an intersection!
 				if(feature.end(other)){
 					// this is a non-isolated loop!
@@ -386,7 +386,7 @@ public class FeatureSet {
 				
 				// should we add the intersection TO the loop? nah
 			
-			} else if (other.numFreeEdges() == 2){
+			} else if (other.numEmptyEdges() == 2){
 			
 				if(feature.add(other)){
 					// no loop, keep up the recursion 

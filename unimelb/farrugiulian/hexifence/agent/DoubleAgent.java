@@ -34,11 +34,11 @@ public class DoubleAgent extends Agent implements Expert{
 		init(board.dimension, piece);
 		this.board = board;
 		safe = new QueueHashSet<Edge>();
-		Edge[] freeEdges = board.getFreeEdges();
+		Edge[] freeEdges = board.getEmptyEdges();
 		for (Edge edge : freeEdges) {
 			boolean isSafe = true;
 			for (Cell cell : edge.getCells()) {
-				if (cell.numFreeEdges() == 2) {
+				if (cell.numEmptyEdges() == 2) {
 					isSafe = false;
 				}
 			}
@@ -81,10 +81,10 @@ public class DoubleAgent extends Agent implements Expert{
 		
 		for(Cell cell : edge.getCells()){
 			
-			int n = cell.numFreeEdges();
+			int n = cell.numEmptyEdges();
 			
 			if(n == 2){
-				for(Edge e : cell.getFreeEdges()){
+				for(Edge e : cell.getEmptyEdges()){
 					// these edges are no longer safe!
 					if(safe.remove(e)){
 						sacr.put(e, sacrificeSize(e));
@@ -96,12 +96,12 @@ public class DoubleAgent extends Agent implements Expert{
 				}
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
-				Edge e = cell.getFreeEdges()[0];
+				Edge e = cell.getEmptyEdges()[0];
 				if(sacr.remove(e) != null){
 					// But what type of free? It depends on whether the other cell is
 					// a sacrifice or not
 					if (e.getOtherCell(cell) != null
-							&& e.getOtherCell(cell).numFreeEdges() == 2) {
+							&& e.getOtherCell(cell).numEmptyEdges() == 2) {
 						scoring.add(e);
 					} else {
 						freeScoring.add(e);
@@ -130,8 +130,8 @@ public class DoubleAgent extends Agent implements Expert{
 				edge.place(super.piece);
 				safeTmp.remove(edge);
 				for(Cell cell : edge.getCells()){
-					if(cell.numFreeEdges() == 2){
-						for(Edge e : cell.getFreeEdges()){
+					if(cell.numEmptyEdges() == 2){
+						for(Edge e : cell.getEmptyEdges()){
 							// these edges are no longer safe!
 							safeTmp.remove(e);
 						}
@@ -152,8 +152,8 @@ public class DoubleAgent extends Agent implements Expert{
 				edge.place(super.piece);
 				safeTmp.remove(edge);
 				for(Cell cell : edge.getCells()){
-					if(cell.numFreeEdges() == 2){
-						for(Edge e : cell.getFreeEdges()){
+					if(cell.numEmptyEdges() == 2){
+						for(Edge e : cell.getEmptyEdges()){
 							// these edges are no longer safe!
 							safeTmp.remove(e);
 						}
@@ -201,8 +201,8 @@ public class DoubleAgent extends Agent implements Expert{
 					edge.place(super.piece);
 					safeTmp.remove(edge);
 					for(Cell cell : edge.getCells()){
-						if(cell.numFreeEdges() == 2){
-							for(Edge e : cell.getFreeEdges()){
+						if(cell.numEmptyEdges() == 2){
+							for(Edge e : cell.getEmptyEdges()){
 								// these edges are no longer safe!
 								safeTmp.remove(e);
 							}
@@ -259,7 +259,7 @@ public class DoubleAgent extends Agent implements Expert{
 				Cell[] cells = scoring.peek().getCells();
 				Cell cell;
 				// Get the cell that has the edge that can double box
-				if (cells[0].numFreeEdges() == 2) {
+				if (cells[0].numEmptyEdges() == 2) {
 					cell = cells[0];
 				} else {
 					cell = cells[1];
@@ -267,12 +267,12 @@ public class DoubleAgent extends Agent implements Expert{
 				Edge paritySwitch;
 				Edge parityKeep;
 				// Figure out which edge can double box
-				if (cell.getFreeEdges()[0] == scoring.peek()){
-					paritySwitch = cell.getFreeEdges()[1];
-					parityKeep = cell.getFreeEdges()[0];
+				if (cell.getEmptyEdges()[0] == scoring.peek()){
+					paritySwitch = cell.getEmptyEdges()[1];
+					parityKeep = cell.getEmptyEdges()[0];
 				} else {
-					paritySwitch = cell.getFreeEdges()[0];
-					parityKeep = cell.getFreeEdges()[1];
+					paritySwitch = cell.getEmptyEdges()[0];
+					parityKeep = cell.getEmptyEdges()[1];
 				}
 				// If we need to switch parity then double box
 				consumeAll(stack);
@@ -311,7 +311,7 @@ public class DoubleAgent extends Agent implements Expert{
 		}
 		
 		// then and only then, select a move that will lead to a small sacrifice
-		Edge[] edges = board.getFreeEdges();
+		Edge[] edges = board.getEmptyEdges();
 		
 		// all remaining edges represent possible sacrifices,
 		// just find the best option (least damage)
@@ -334,18 +334,18 @@ public class DoubleAgent extends Agent implements Expert{
 			Edge secureEdge = bestEdge;
 			Edge baitEdge = bestEdge;
 			// If the current bestEdge is a secure edge
-			if (bestEdge.getCells()[0].numFreeEdges() == 1 &&
+			if (bestEdge.getCells()[0].numEmptyEdges() == 1 &&
 					bestEdge.getCells().length == 2 &&
-					bestEdge.getCells()[1].numFreeEdges() == 1) {
+					bestEdge.getCells()[1].numEmptyEdges() == 1) {
 				// Fix up the bait edge
-				baitEdge = bestEdge.getCells()[0].getFreeEdges()[0];
+				baitEdge = bestEdge.getCells()[0].getEmptyEdges()[0];
 			// Otherwise the current bestEdge is a bait edge
 			} else {
 				// Fix up the secure edge
-				if (bestEdge.getCells()[0].numFreeEdges() == 1) {
-					secureEdge = bestEdge.getCells()[0].getFreeEdges()[0];
+				if (bestEdge.getCells()[0].numEmptyEdges() == 1) {
+					secureEdge = bestEdge.getCells()[0].getEmptyEdges()[0];
 				} else {
-					secureEdge = bestEdge.getCells()[1].getFreeEdges()[0];
+					secureEdge = bestEdge.getCells()[1].getEmptyEdges()[0];
 				}
 			}
 			board.unplace(bestEdge);
@@ -372,10 +372,10 @@ public class DoubleAgent extends Agent implements Expert{
 				edge.place(super.piece);
 				stack.push(edge);
 				capturable++;
-				if (edge.getCells()[0].numFreeEdges() > 0){
+				if (edge.getCells()[0].numEmptyEdges() > 0){
 					capturable += sacrifice(edge.getCells()[0], stack);
 				}
-				if (edge.getCells().length == 2 && edge.getCells()[1].numFreeEdges() > 0){
+				if (edge.getCells().length == 2 && edge.getCells()[1].numEmptyEdges() > 0){
 					capturable += sacrifice(edge.getCells()[1], stack);
 				}
 			}
@@ -390,7 +390,7 @@ public class DoubleAgent extends Agent implements Expert{
 		while(takeShortChain(stack) != 0) {
 			numShortChains++;
 		}
-		if (board.getFreeEdges().length == 0) {
+		if (board.getEmptyEdges().length == 0) {
 			numShortChains++;
 		}
 		// Undo all moves made while testing
@@ -401,7 +401,7 @@ public class DoubleAgent extends Agent implements Expert{
 	}
 	
 	private int takeShortChain(Stack<Edge> stack) {
-		Edge[] edges = board.getFreeEdges();
+		Edge[] edges = board.getEmptyEdges();
 		
 		if (edges.length == 0) {
 			return 0;
@@ -414,8 +414,8 @@ public class DoubleAgent extends Agent implements Expert{
 		for(int i = 0; i < edges.length; i++){
 			Edge edge = edges[i];
 			// Only consider edges that don't score
-			if (edge.getCells()[0].numFreeEdges() > 1 && (edge.getCells().length == 1
-					|| edge.getCells()[1].numFreeEdges() > 1)){
+			if (edge.getCells()[0].numEmptyEdges() > 1 && (edge.getCells().length == 1
+					|| edge.getCells()[1].numEmptyEdges() > 1)){
 				int cost = sacrificeSize(edge);
 				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
 					bestEdge = edge;
@@ -444,7 +444,7 @@ public class DoubleAgent extends Agent implements Expert{
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				size += sacrifice(cell, stack);
 			}
 		}
@@ -458,7 +458,7 @@ public class DoubleAgent extends Agent implements Expert{
 
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture
@@ -496,7 +496,7 @@ public class DoubleAgent extends Agent implements Expert{
 		stack.push(edge);
 		
 		for(Cell cell : edge.getCells()){
-			if (cell.numFreeEdges() != 0){
+			if (cell.numEmptyEdges() != 0){
 				isLoop |= hasDeadEnd(cell, stack);
 			}
 		}
@@ -509,7 +509,7 @@ public class DoubleAgent extends Agent implements Expert{
 	
 	private boolean hasDeadEnd(Cell cell, Stack<Edge> stack){
 		
-		int n = cell.numFreeEdges();
+		int n = cell.numEmptyEdges();
 		
 		if(n > 1){
 			// this cell is not available for capture

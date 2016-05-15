@@ -32,7 +32,7 @@ public abstract class Agent implements VisualPlayer{
 		
 		// figure out who is who
 		this.piece = p;
-		this.opponent = (p == Piece.BLUE) ? Piece.RED : Piece.BLUE;
+		this.opponent = Board.other(p);
 		
 		// initialise player state
 		this.state = PlayerState.STARTING;
@@ -109,7 +109,8 @@ public abstract class Agent implements VisualPlayer{
 			this.state = PlayerState.CHEATED;
 			return -1;
 		
-		} else if(this.state == PlayerState.WAITING || this.state == PlayerState.STARTING){
+		} else if(this.state == PlayerState.WAITING
+					|| this.state == PlayerState.STARTING){
 			// we ARE expecting a move
 			// better validate the move...
 
