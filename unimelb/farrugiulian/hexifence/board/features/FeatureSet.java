@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.board.features;
 
 import java.util.ArrayList;
@@ -8,23 +16,43 @@ import unimelb.farrugiulian.hexifence.board.*;
 
 import unimelb.farrugiulian.hexifence.board.features.Feature.Classification;
 
+/** FeatureSet is a class for creating, storing and associating Board Features
+ * 
+ * @author Matt Farrugia [farrugiam]
+ * @author Julian Tran   [juliant1]
+ */
 public class FeatureSet {
 
+	/** Collection of features on the board
+	 *  Kept up-to-date through {@link Feature#consume Feature.consume()}
+	 *  (though the actual board is never altered)
+	 **/
 	private ArrayList<Feature> features = new ArrayList<Feature>();
 	
+	/** Get the FeatureSet's Features
+	 * @return the array of Feature objects that this FeatureSet is storing
+	 * (NOT a copy!)
+	 **/
 	public ArrayList<Feature> getFeatures(){
 		return features;
 	}
 	
+	/** Get the feature with index i **/
 	public Feature getFeature(int i){
 		return features.get(i);
 	}
 	
+	/** Is the FeatureSet empty?
+	 * @return true iff the FeatureSet is out of features
+	 **/
 	public boolean isEmpty(){
 		return features.isEmpty();
 	}
 	
-	int piece, advantage = 0;
+	/** Positive advantage piece **/
+	private int piece;
+	/** How many points is this.piece ahead? **/
+	private int advantage = 0;
 	
 	/** Get the difference in score from {@code piece}'s perspective
 	 * @param piece the piece to look at the advantage as
@@ -38,11 +66,11 @@ public class FeatureSet {
 	 * @param piece the piece gaining these cells
 	 * @param score the number of cells to add to that piece's score
 	 **/
-	public void score(int piece, int score){
+	protected void score(int piece, int score){
 		advantage += score * ((piece == this.piece) ? 1 : -1);
 	}
 	
-	/** map between cells and features **/
+	/** Map between cells and features **/
 	private HashMap<Cell, Feature> map = new HashMap<Cell, Feature>();
 
 	/** Map this cell to this feature for future reference **/
@@ -100,7 +128,11 @@ public class FeatureSet {
 		}
 	}
 	
-	
+	/** Classification algorithm that reads a board starting from a cell and
+	 *  constructing a feature to add to the feature set and map
+	 * @param cell cell to begin the classification search at
+	 * @param visited running HashSet of visited Cells to maintain
+	 **/
 	private void classify(Cell cell, HashSet<Cell> visited) {
 		
 		int n = cell.numEmptyEdges();
@@ -142,6 +174,14 @@ public class FeatureSet {
 		features.add(feature);
 	}
 
+	/** Helper function for classification, recursively constructs and
+	 *  classifies a feature based on the nature of the cells it encounters
+	 * @param cell The next cell to recursively explore
+	 * @param parent The previous cell (to avoid branching backwards) - null
+	 *        at top level of recursion
+	 * @param visited HashSet of visited cells to maintain
+	 * @param feature Current Feature being constructed
+	 */
 	private void explore(Cell cell, Cell parent, HashSet<Cell> visited, Feature feature) {
 		
 		Edge[] edges = cell.getEmptyEdges();
