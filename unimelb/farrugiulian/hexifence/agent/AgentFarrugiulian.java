@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.*;
 
@@ -190,10 +191,10 @@ public class AgentFarrugiulian extends Agent {
 				// Decide whether we should actually double box with a search
 				consumeAll(stack);
 				FeatureSet fs = new FeatureSet(board, super.piece);
+				SearchPair<Feature> sp = featureSearch(fs, Board.other(piece));
 				while(!stack.isEmpty()){
 					board.unplace(stack.pop());
 				}
-				SearchPair<Feature> sp = featureSearch(fs, Board.other(piece));
 				if (sp.piece == super.piece) {
 					System.out.println("Double boxing");
 					// If double boxing makes us win, then double box (duh)
@@ -440,6 +441,7 @@ public class AgentFarrugiulian extends Agent {
 				currentPiece = Board.other(currentPiece);
 			} else {
 				// We double box these sacrifices
+				Feature.Classification classification = smallestSacrifice.classification();
 				smallestSacrifice.consume(Board.other(currentPiece), true);
 				int numIsolatedClusters = numIsolatedClusters(features);
 				// But maybe it is not a good idea to, because this sacrifice may
@@ -447,13 +449,17 @@ public class AgentFarrugiulian extends Agent {
 				if (numIsolatedClusters % 2 == 1
 						^ numIsolatedClusters == features.getFeatures().size()) {
 					// Fix up the score and the current player as if we did not double box
-					features.score(currentPiece, -2);
-					features.score(Board.other(currentPiece), 2);
+					int swing = classification == Feature.Classification.CHAIN ? 2 : 4;
+					features.score(currentPiece, -swing);
+					features.score(Board.other(currentPiece), swing);
 					currentPiece = Board.other(currentPiece);
 				}
 			}
 		}
 		// Return the winning piece
+		if (stage == GameStage.ENDGAME) {
+			System.out.println(features.score(Piece.BLUE));
+		}
 		return features.score(piece) > 0 ? piece : Board.other(piece);
 	}
 	
