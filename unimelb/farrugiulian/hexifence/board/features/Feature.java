@@ -49,7 +49,7 @@ public class Feature {
 		// but use the new featureset! ;)
 		this.fs = fs;
 		
-		for(Cell cell : this.cells){
+		for(Cell cell : that.cells){
 			this.add(cell); // takes care of adding the cells to the new map
 		}
 	}

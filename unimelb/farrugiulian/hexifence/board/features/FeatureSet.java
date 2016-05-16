@@ -124,7 +124,7 @@ public class FeatureSet {
 		
 		for(Feature feature : that.features){
 			this.features.add(new Feature(feature, this));
-			// takes care of adding the feature's cells to the new map too
+			// takes care of adding the feature's cells to the new map too!
 		}
 	}
 	
