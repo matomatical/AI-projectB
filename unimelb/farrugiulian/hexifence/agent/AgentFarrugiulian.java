@@ -46,10 +46,10 @@ import unimelb.farrugiulian.hexifence.board.features.*;
 public class AgentFarrugiulian extends Agent {
 	
 	/** Number of Safe edges that signals the beginning of the Midgame stage**/
-	private static final int MIDGAME_SEARCH_DEPTH = 19;
+	private static final int MIDGAME_SEARCH_DEPTH = 30;
 	
 	/** Timeout (in ms) for midgame searching **/
-	private static final int MIDGAME_SEARCH_TIMEOUT = 5000;
+	private static final int MIDGAME_SEARCH_TIMEOUT = 500;
 	
 	/** Enum to keep track of game stage **/
 	private enum GameStage{
@@ -105,12 +105,6 @@ public class AgentFarrugiulian extends Agent {
 	
 		// no matter the game stage, capture any consequence-free cells
 		if(es.hasFreeEdges()){
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			return es.getFreeEdge();
 		}
 		
@@ -124,12 +118,6 @@ public class AgentFarrugiulian extends Agent {
 			return midgameMove();
 			
 		case ENDGAME:
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			return endgameMove();
 		}
 	}

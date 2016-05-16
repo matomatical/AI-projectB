@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import com.matomatical.util.QueueHashSet;
 
 import aiproj.hexifence.Piece;
-import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
@@ -37,37 +35,12 @@ import unimelb.farrugiulian.hexifence.board.Edge;
  * @author Julain Tran   [juliant1]
  * @author Matt Farrugia [farrugiam]
  **/
-public class DoubleAgent extends Agent implements Expert{
+public class DoubleAgent extends Agent {
 	
 	/** HashSet for storing Edges **/
 	private QueueHashSet<Edge> freeScoring, scoring, safe, sacr;
 	
 	private int locked = 0;
-	
-	/** Create a new double agent 
-	 * 
-	 * @param board
-	 * @param piece
-	 **/
-	public DoubleAgent(Board board, int piece) {
-		init(board.dimension, piece);
-		this.board = board;
-		safe = new QueueHashSet<Edge>();
-		Edge[] freeEdges = board.getEmptyEdges();
-		for (Edge edge : freeEdges) {
-			boolean isSafe = true;
-			for (Cell cell : edge.getCells()) {
-				if (cell.numEmptyEdges() == 2) {
-					isSafe = false;
-				}
-			}
-			if (isSafe) {
-				safe.add(edge);
-			} else {
-				sacr.add(edge);
-			}
-		}
-	}
 	
 	@Override
 	public int init(int n, int p){
@@ -555,15 +528,5 @@ public class DoubleAgent extends Agent implements Expert{
 		
 		// n == 0, which means this cell is a dead end for the taking
 		return true;
-	}
-
-	@Override
-	public Edge move() {
-		return getChoice();
-	}
-
-	@Override
-	public boolean transition() {
-		return false;
 	}
 }
