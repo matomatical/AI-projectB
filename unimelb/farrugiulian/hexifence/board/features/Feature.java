@@ -183,7 +183,7 @@ public class Feature {
 				for(int i = 0; i < a.nends; i++){
 					if(a.ends[i] != intersection.cells.element()){
 						// found the right and of a!
-						for(int j = 0; i < b.nends; j++){
+						for(int j = 0; j < b.nends; j++){
 							if(b.ends[j] == intersection.cells.element()){
 								// found the right end of b!
 								b.ends[j] = a.ends[i];
