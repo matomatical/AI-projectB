@@ -44,7 +44,7 @@ public class AgentFarrugiulian extends Agent {
   private static final int MIDGAME_SEARCH_DEPTH = 30;
 
   /** Timeout (in ms) for midgame searching **/
-  private static final int MIDGAME_SEARCH_TIMEOUT = 500;
+  private static final int MIDGAME_SEARCH_TIMEOUT = 3000;
 
   /** Enum to keep track of game stage **/
   private enum GameStage {
