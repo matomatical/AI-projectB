@@ -1,3 +1,10 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 package unimelb.farrugiulian.hexifence.board;
 
@@ -7,19 +14,25 @@ import com.matomatical.hexifence.visual.VisualBoard;
 
 import aiproj.hexifence.Piece;
 
+/** A Hexifence Game Board, used for storing the state of the game and also
+ *  trying different scenarios
+ * 
+ * @author Matt Farrugia [farrugiam]
+ * @author Julian Tran   [juliant1]
+ */
 public class Board implements VisualBoard{
 
 	/** The dimension of the game board (also referred to as radius) */
 	public final int dimension;
 	/** the width of the board grid */
 	public final int width;
-	// (store both width and dimension as we will use both of them frequently)
+	// (store BOTH width AND dimension as we will use both of them frequently)
 	
 	/** the array storing the Cells and Edges that make up the board */
 	private Index[][] grid;
 	
 	/** Create, initialise an empty board
-	 * @param dimension the dimension (radius) of the board
+	 * @param dimension the dimension (radius) of the board in cells
 	 */
 	public Board(int dimension){
 		
@@ -61,22 +74,33 @@ public class Board implements VisualBoard{
 		}
 	}
 
-	// board setup helper functions
+	/** true iff this edge represents a valid edge or cell, as long as it's
+	 *  only called after the board grid has been properly initialised
+	 **/
 	public boolean isValid(int i, int j) {return (grid[i][j] != null);}
+	/** true iff these indices point at a cell **/
 	public boolean isCell(int i, int j) {return i%2==1 && j%2==1;}
+	/** true iff these indices point at an edge **/
 	public boolean isEdge(int i, int j) {return isValid(i,j) && !isCell(i,j);}
 	
-	// moving and unmoving functions
+	/** On the edge at this index, place this piece
+	 * @throws NullPointerException if this index does not refer to an edge
+	 **/
 	public void place(int i, int j, int piece){
 		getEdge(i,j).place(piece);
 	}
+	/** On this edge, place this piece **/
 	public void place(Edge edge, int piece){
 		edge.place(piece);
 	}
 	
+	/** Unplace the piece on the edge at this index
+	 * @throws NullPointerException if this index does not refer to an edge
+	 **/
 	public void unplace(int i, int j){
 		getEdge(i,j).unplace();
 	}
+	/** Unplace the piece on this edge **/
 	public void unplace(Edge edge){
 		edge.unplace();
 	}
@@ -201,14 +225,8 @@ public class Board implements VisualBoard{
 		
 		return freeEdges;
 	}
-
-	// need this?
-	public int numCapturableCellsAt(int i, int j) {
-		return this.getEdge(i, j).numCapturableCells();
-	}
-
-	// i/o methods
 	
+	/** Print this board to an output PrintStream **/
 	public void printTo(PrintStream out) {
 		int color;
 		for(int i = 0; i < width; i++){
@@ -242,9 +260,12 @@ public class Board implements VisualBoard{
 		}
 	}
 
+	/** Print this board plus surrounding grid indices.
+	 *  Will fail to print properly if board's width is > 99
+	 **/
 	public void printIndexedTo(PrintStream out) {
 
-		// doesnt work for width > 100
+		// doesnt work for width > 99
 		
 		if(width < 10){
 			out.print("  ");
@@ -311,10 +332,25 @@ public class Board implements VisualBoard{
 	}
 
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/** Static helper functions for easily working with Piece interface **/
+	
+	/** Get the opposing player's piece according to {@link Piece} **/
 	public static int other(int piece) {
 		return (piece == Piece.RED) ? Piece.BLUE : Piece.RED;
 	}
 
+	/** Get the color name of this piece **/
 	public static String name(int piece){
 		return (piece == Piece.RED) ? "RED" : "BLUE";
 	}

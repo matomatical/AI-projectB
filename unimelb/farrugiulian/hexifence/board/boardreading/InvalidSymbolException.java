@@ -13,7 +13,7 @@ package unimelb.farrugiulian.hexifence.board.boardreading;
  * 
  * @author Matt Farrugia [farrugiam]
  * @author Julian Tran   [juliant1]
- */
+ **/
 public class InvalidSymbolException extends Exception {
 	
 	/** Generated serial version uid **/
@@ -25,18 +25,19 @@ public class InvalidSymbolException extends Exception {
 	 * @param j clumns index where encountered
 	 * @param symbol encountered symbol
 	 * @param expectedSymbol expected symbol
-	 */
-	public InvalidSymbolException(int i, int j, String symbol, String expectedSymbol){
+	 **/
+	public InvalidSymbolException(int i, int j, String symbol,
+			String expectedSymbol){
 		super("Invalid symbol " + symbol + " at index (" + i + "," + j + "),"+
 			" expecting " + expectedSymbol);
 	}
 
 	/** Create an exception to repseresnt a general symbol mismatch.
-	 *  Creates an informative message to describe the mismatch based on a user-
+	 *  Creates an informative message to describe the mismatch based on a user
 	 *  specified reason.
 	 * @param symbol encountered symbol
 	 * @param reason custom reason why this caused an exception
-	 */
+	 **/
 	public InvalidSymbolException(String symbol, String reason){
 		super("Invalid symbol \"" + symbol + "\": " + reason);
 	}

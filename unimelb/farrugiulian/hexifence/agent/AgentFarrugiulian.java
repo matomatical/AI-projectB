@@ -8,11 +8,9 @@
 
 package unimelb.farrugiulian.hexifence.agent;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.*;
 
