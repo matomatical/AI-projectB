@@ -14,6 +14,7 @@ import unimelb.farrugiulian.hexifence.board.Edge;
 
 /** This agent does not think for itself, it asks stdin for help deciding which
  *  edges to take at any point in time!
+ *  
  * @author Matt Farrugia [farrugiam]
  * @author Julian Tran   [juliant1]
  **/

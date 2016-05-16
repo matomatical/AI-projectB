@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                   Last Modified 24/04/16 by Julian Tran                   *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.List;
@@ -14,6 +22,21 @@ import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
+/** This agent plays the Game of Hexifence with random capturing or safe moves
+ *  up to the point where sacrifices must be made, where it begins to attempt
+ *  to remain in control using a double-boxing strategy using a simple parity
+ *  based evaluation function.
+ *  
+ *  This strategy works well if there are big chains and loops sacrificing on
+ *  the board which make sacrificing short chains worth it to get the long
+ *  chains at the end (more suitable for large board sizes) and also the parity
+ *  evaluation is not perfect as there are situations where the order in which
+ *  chains are sacrificed can effect the overall parity count and change who
+ *  ends up in control.
+ * 
+ * @author Julain Tran   [juliant1]
+ * @author Matt Farrugia [farrugiam]
+ **/
 public class DoubleAgent extends Agent implements Expert{
 	
 	private QueueHashSet<Edge> freeScoring;

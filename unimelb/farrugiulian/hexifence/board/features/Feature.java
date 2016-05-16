@@ -198,17 +198,14 @@ public class Feature {
 				
 			} else if (features.size() == 2){
 				// if either feature is a loop, we're still in tact!
+				
 				boolean loops = false;
 				for(Feature feature : features){
-					if(feature.classification() == Classification.LOOP){
-						// found one!
-						
-						loops = true;
+					if(feature.classification() == Classification.LOOP){		
+						loops = true; // found one!
 					}
 				}
-				
 				if(loops){
-					
 					// nothing more to do on this side!
 					continue;
 				}
