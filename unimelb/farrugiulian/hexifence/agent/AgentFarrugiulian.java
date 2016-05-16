@@ -388,6 +388,23 @@ public class AgentFarrugiulian extends Agent {
 				smallestSacrifice = feature;
 			}
 		}
+		// If our smallest sacrifice is actually not so small, let's sacrifice
+		// an isolated loop instead if possible
+		if (smallestSacrifice.length() < 3
+				|| smallestSacrifice.classification() == Feature.Classification.ISO_LOOP
+				&& smallestSacrifice.length() == 3) {
+			Feature smallestIsolatedLoop = null;
+			for (Feature feature : features.getFeatures()) {
+				if (feature.classification() == Feature.Classification.ISO_LOOP
+						&& (smallestIsolatedLoop == null
+								|| feature.length() < smallestIsolatedLoop.length())) {
+					smallestIsolatedLoop = feature;
+				}
+			}
+			if (smallestIsolatedLoop != null) {
+				return smallestIsolatedLoop;
+			}
+		}
 		return smallestSacrifice;
 	}
 	
