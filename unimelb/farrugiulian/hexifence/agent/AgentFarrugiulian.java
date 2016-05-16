@@ -232,7 +232,6 @@ public class AgentFarrugiulian extends Agent {
 		if (sp.piece == super.piece) {
 			System.out.println(Board.name(piece) + " is securely moving");
 			// We should win so make the sacrifice securely
-			//System.out.println(sp.choice.length());
 			return sp.choice.choose(false);
 		} else {
 			System.out.println(Board.name(piece) + " is baiting");
@@ -308,11 +307,8 @@ public class AgentFarrugiulian extends Agent {
 	private SearchPair<Feature> featureSearch(FeatureSet features, int piece) {
 		int numIntersectedSacrifices = numIntersectedSacrifices(features);
 		if (numIntersectedSacrifices == 0) {
-			// Simple parity evaluation right now
-			//int numSacrifices = numSacrifices(features);
-			//int winningPiece = (piece == Piece.BLUE) ^ (numSacrifices % 2 == 0) ? Piece.BLUE : Piece.RED;
-			int winningPiece = playout(features, piece);
-			return new SearchPair<Feature>(null, winningPiece);
+			// Play out the game and see who wins
+			return new SearchPair<Feature>(null, playout(features, piece));
 		}
 		
 		SearchPair<Feature> result = null;
@@ -390,6 +386,23 @@ public class AgentFarrugiulian extends Agent {
 				smallestSacrifice = feature;
 			}
 		}
+		// If our smallest sacrifice is actually not so small, let's sacrifice
+		// an isolated loop instead if possible
+		if (smallestSacrifice.length() < 3
+				|| smallestSacrifice.classification() == Feature.Classification.ISO_LOOP
+				&& smallestSacrifice.length() == 3) {
+			Feature smallestIsolatedLoop = null;
+			for (Feature feature : features.getFeatures()) {
+				if (feature.classification() == Feature.Classification.ISO_LOOP
+						&& (smallestIsolatedLoop == null
+								|| feature.length() < smallestIsolatedLoop.length())) {
+					smallestIsolatedLoop = feature;
+				}
+			}
+			if (smallestIsolatedLoop != null) {
+				return smallestIsolatedLoop;
+			}
+		}
 		return smallestSacrifice;
 	}
 	
@@ -448,9 +461,6 @@ public class AgentFarrugiulian extends Agent {
 	 *       The piece expected to win
 	 **/
 	private int winner(int piece){
-		//return Board.other(piece);
-		//return (piece == Piece.BLUE) ^ (numShortChains() % 2 == 0) ? Piece.BLUE : Piece.RED;
-		
 		// Mate you thought you were done minimaxing? Sorry your evaluation function
 		// is another minimax...
 		FeatureSet features = new FeatureSet(board, piece);
