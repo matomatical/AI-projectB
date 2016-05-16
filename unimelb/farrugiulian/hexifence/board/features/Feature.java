@@ -305,11 +305,16 @@ public class Feature {
 			return null;
 			
 		} else {
-			if(baiting){
+			if(baiting && this.length() == 2){
+				
+				
 				
 			} else {
 				
+				
+				
 			}
+			
 			// for NOW we're just returning ANY old edge to open this feature
 			// but later we'll be a little more careful ;) TODO
 			return this.cells.element().getEmptyEdges()[0];
