@@ -225,9 +225,11 @@ public class DoubleAgent extends Agent {
 				board.unplace(stack.pop());
 			}
 			if (numShortChains % 2 == 0) {
-				System.out.println(color + " has " + numShortChains + " short chains left and should lose");
+				System.out.println(color + " has " + numShortChains
+						+ " short chains left and should lose");
 			} else {
-				System.out.println(color + " has " + numShortChains + " short chains left and should win");
+				System.out.println(color + " has " + numShortChains
+						+ " short chains left and should win");
 			}
 			locked = 1;
 		}
@@ -239,7 +241,7 @@ public class DoubleAgent extends Agent {
 				board.unplace(stack.pop());
 			}
 			/*System.out.println("Capturable cells: " + capturable);
-			System.out.println("Taking " + scoring.peek().i + "," + scoring.peek().j);
+			System.out.println("Taking "+scoring.peek());
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -287,8 +289,9 @@ public class DoubleAgent extends Agent {
 				return choice;
 			}
 			
-			// Logic for in case the enemy does not take a big sacrifice, and offers
-			// it back at us. It just prioritises taking the smallest dead end.
+			// Logic for in case the enemy does not take a big sacrifice, and 
+			// offers it back at us. It just prioritises taking the smallest
+			// dead end.
 			Edge bestEdge = null;
 			for (Edge edge : scoring) {
 				isLoop = false;
@@ -302,7 +305,8 @@ public class DoubleAgent extends Agent {
 			return bestEdge;
 		}
 		
-		// then and only then, select a move that will lead to a small sacrifice
+		// then and only then, select a move that will lead to a small
+		// sacrifice
 		Edge[] edges = board.getEmptyEdges();
 		
 		// all remaining edges represent possible sacrifices,
@@ -320,7 +324,8 @@ public class DoubleAgent extends Agent {
 			}
 		}
 		
-		// If we are sacrificing a chain of length 2 we need to either secure or bait
+		// If we are sacrificing a chain of length 2 we need to either secure
+		// or bait
 		if (bestCost == 2) {
 			bestEdge.place(super.piece);
 			Edge secureEdge = bestEdge;
@@ -367,7 +372,8 @@ public class DoubleAgent extends Agent {
 				if (edge.getCells()[0].numEmptyEdges() > 0){
 					capturable += sacrifice(edge.getCells()[0], stack);
 				}
-				if (edge.getCells().length == 2 && edge.getCells()[1].numEmptyEdges() > 0){
+				if (edge.getCells().length == 2
+						&& edge.getCells()[1].numEmptyEdges() > 0){
 					capturable += sacrifice(edge.getCells()[1], stack);
 				}
 			}
@@ -406,7 +412,8 @@ public class DoubleAgent extends Agent {
 		for(int i = 0; i < edges.length; i++){
 			Edge edge = edges[i];
 			// Only consider edges that don't score
-			if (edge.getCells()[0].numEmptyEdges() > 1 && (edge.getCells().length == 1
+			if (edge.getCells()[0].numEmptyEdges() > 1
+					&& (edge.getCells().length == 1
 					|| edge.getCells()[1].numEmptyEdges() > 1)){
 				int cost = sacrificeSize(edge);
 				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){

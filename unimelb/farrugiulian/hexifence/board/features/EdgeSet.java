@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                   Last Modified 16/05/16 by Julian Tran                   *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.board.features;
 
 import java.util.Arrays;
@@ -9,6 +17,28 @@ import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.*;
 
+/** Collection of Edges sorted based on edge classifications:
+ * <ul>
+ * <li> free -	edges that capture a cell with no consequences to the
+ * 				capturability of neighbouring cells
+ * </li>
+ * <li> capturing -	edges that capture a cell and in doing so, also make
+ * 				a neighbouring cell captureable
+ * </li>
+ * <li> safe -	edges that do not capture a cell, or make any of their
+ * 				neighbouring cells captureable
+ * </li>
+ * <li> sacrificing -	edges that do not capture a cell but do make
+ * 				neighbouring cells captureable (sacrificing those cells)
+ * </li>
+ * </ul>
+ * 
+ * The set supports linear-time creation and constant-time updating, rewinding
+ * peeking/removing. Enjoy!
+ * 
+ * @author Matt Farrugia [farrugiam]
+ * @author Julian Tran   [juliant1]
+ **/
 public class EdgeSet {
 	
 	/** Set of edges that capture a cell with no consequences to the
@@ -169,54 +199,70 @@ public class EdgeSet {
 		}
 	}
 	
+	/** @return true iff this edge set contains safe edges **/
 	public boolean hasSafeEdges(){
 		return safe.size() > 0;
 	}
+	/** @return the number of remaining safe edges in this edge set **/
 	public int numSafeEdges(){
 		return safe.size();
 	}
+	/** @return the first safe edge in the collection (doesn't remove) **/
 	public Edge getSafeEdge(){
 		return safe.element();
 	}
+	/** @return THE QueueHashSet storing safe edges (NOT a copy) **/
 	public QueueHashSet<Edge> getSafeEdges(){
 		return safe;
 	}
 	
+	/** @return true iff this edge set contains free edges **/
 	public boolean hasFreeEdges(){
 		return free.size() > 0;
 	}
+	/** @return the number of remaining free edges in this edge set **/
 	public int numFreeEdges(){
 		return free.size();
 	}
+	/** @return the first free edge in the collection (doesn't remove) **/
 	public Edge getFreeEdge(){
 		return free.element();
 	}
+	/** @return THE QueueHashSet storing free edges (NOT a copy) **/
 	public QueueHashSet<Edge> getFreeEdges(){
 		return free;
 	}
 	
+	/** @return true iff this edge set contains sacrificing edges **/
 	public boolean hasSacrificingEdges(){
 		return sacrificing.size() > 0;
 	}
+	/** @return the number of remaining sacrificing edges in this edge set **/
 	public int numSacrificingEdges(){
 		return sacrificing.size();
 	}
+	/** @return the first sacrificing edge in the collection (won't remove) **/
 	public Edge getSacrificingEdge(){
 		return sacrificing.element();
 	}
+	/** @return THE QueueHashSet storing sacrificing edges (NOT a copy) **/
 	public QueueHashSet<Edge> getSacrificingEdges(){
 		return sacrificing;
 	}
 	
+	/** @return true iff this edge set contains capturing edges **/
 	public boolean hasCapturingEdges(){
 		return capturing.size() > 0;
 	}
+	/** @return the number of remaining capturing edges in this edge set **/
 	public int numCapturingEdges(){
 		return capturing.size();
 	}
+	/** @return the first capturing edge in the collection (doesn't remove) **/
 	public Edge getCapturingEdge(){
 		return capturing.element();
 	}
+	/** @return THE QueueHashSet storing capturing edges (NOT a copy) **/
 	public QueueHashSet<Edge> getCapturingEdges(){
 		return capturing;
 	}
