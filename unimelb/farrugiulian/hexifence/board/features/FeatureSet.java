@@ -91,9 +91,6 @@ public class FeatureSet {
 	 * advantage (doesn't actually make a difference)
 	 **/
 	public FeatureSet(Board board, int piece){
-		
-		//System.out.println("Making a new featureset " + this);
-		
 		this.piece = piece;
 		
 		// perform a specialised DFS over cells to construct our collection of
@@ -120,9 +117,6 @@ public class FeatureSet {
 	 * @param fs the FeatureSet to copy
 	 **/
 	public FeatureSet(FeatureSet that){
-		
-		//System.out.println("Making a new featureset copy of " + that);
-		
 		this.piece = that.piece;
 		this.advantage = that.advantage;
 		
@@ -251,5 +245,28 @@ public class FeatureSet {
 		}
 		
 		// done!
+	}
+	
+	public String toString(){
+		
+		String output = "Welcome to this feature. The map looks like:\n";
+		
+		for(Cell cell : this.map.keySet()){
+			output += cell + " maps to " + this.map.get(cell) + "\n";
+		}
+		
+		output += "\nAnd the features look like:\n";
+		
+		for(Feature feature : features){
+			
+			output += feature.toString() + " connected to: \n";
+			for(Feature f : feature.getFeatures()){
+				output += "--> " + f.toString() + "\n";
+			}
+			
+			output += "\n";
+		}
+		
+		return output;
 	}
 }

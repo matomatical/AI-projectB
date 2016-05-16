@@ -348,9 +348,6 @@ public class AgentFarrugiulian extends Agent {
 		SearchPair<Feature> result = null;
 		for (int i = 0; i < numIntersectedSacrifices; i++) {
 			FeatureSet featuresTmp = new FeatureSet(features);
-			//System.out.println("Original num: " + numIntersectedSacrifices(features));
-			//System.out.println("New num: " + numIntersectedSacrifices(featuresTmp));
-			//System.exit(0);
 			getIntersectedSacrifices(featuresTmp).get(i).consume(Board.other(piece), false);
 			
 			SearchPair<Feature> pair = featureSearch(featuresTmp, Board.other(piece));
