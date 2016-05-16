@@ -141,10 +141,11 @@ public class Feature {
 		}
 		
 		// otherwise, there are still lots of cases to consider!		
-		// first, remove this feature from the featureset!
+		// first thing's first, remove this feature from the featureset!
 		this.fs.remove(this);
 		
-		// now, if it's an isolated chain or loop, no other features care
+		// now, if it's an isolated chain or loop, no other features care,
+		// we can just score it
 		if(this.type == Classification.ISO_LOOP){
 			if(boxing && this.length() > 3){
 				// if we're boxing and this isn't a cluster, update the score
@@ -153,7 +154,7 @@ public class Feature {
 			} else {
 				this.fs.score(piece, this.length()); // all for me, thank you
 			}
-			return;
+			return; // all done!
 		} else if (this.type == Classification.CHAIN && this.isIsolated()){
 			
 			if(boxing && this.length() > 1){
@@ -163,11 +164,13 @@ public class Feature {
 			} else {
 				this.fs.score(piece, this.length()); // all for me, thank you
 			}
-			return;
+			return; // all done!
 		}
 		
 		// okay, so far so good, but what if it's an intersecting feature!?
-		// it may be okay, if the intersections have enough remaining chains...
+		// it may be okay, if the intersections have enough remaining chains
+		// we'll have to count them to see
+		
 		// no matter what, we're going to score this feature like a chain
 		// (since it's not an isoloop)
 		
@@ -179,26 +182,35 @@ public class Feature {
 			this.fs.score(piece, this.length()); // all for me, thank you
 		}
 
-		// now, for each intersection coming off it,
+		// now, for each intersection coming off it, lets analyse them to
+		// see if further changes need to be made
 		for(Feature intersection : this.getFeatures()){
-			// analyse this intersection's remaining features to decide if
-			// further changes need to be made!
+			
+			// get the features in this intersection
 			ArrayList<Feature> features = intersection.getFeatures();
 			
 			if(features.size() > 2){
 				// this intersection is definitely still in tact! it's actually
 				// as if we were an isolated chain!
-				// nothing more to do here...
-				return;
+				
+				// nothing more to do here on this side...
+				continue;
 				
 			} else if (features.size() == 2){
 				// if either feature is a loop, we're still in tact!
+				boolean loops = false;
 				for(Feature feature : features){
 					if(feature.classification() == Classification.LOOP){
-						// we're still good!
+						// found one!
 						
-						return;
+						loops = true;
 					}
+				}
+				
+				if(loops){
+					
+					// nothing more to do on this side!
+					continue;
 				}
 				
 				// if we make it to here, there are no loops! we're looking at
@@ -230,6 +242,10 @@ public class Feature {
 				}
 				b.add(intersection.cells.element());
 				
+				// it's also possible that this created a loop!
+				if(b.ends[0] == b.ends[1] && b.ends[0] != null){
+					b.classify(Classification.LOOP);
+				}
 				
 			} else if (features.size() < 2){
 				Feature last = features.get(0);
@@ -243,6 +259,7 @@ public class Feature {
 					
 					last.add(intersection.cells.element());
 					last.classify(Classification.ISO_LOOP);
+					
 					// also wipe this loop's ends
 					last.nends = 0;
 					
@@ -311,13 +328,14 @@ public class Feature {
 			for(Edge edge : cell.getEmptyEdges()){
 				Cell other = edge.getOtherCell(cell);
 				// make sure we're not on the side of the board (shouldn't
-				// happen because we're assuming lockdown)
+				// happen because we're assuming lockdown and these side edges
+				// would be safe)
 				if(other != null){
 					Feature f = this.fs.unmap(other);
 					// make sure this feature still exists in the feature set
 					if(f != null){
-						// unless we're thinking of adding a loop thats already in,
-						// add this feature
+						// unless we're thinking of adding a loop thats already
+						// in, add this feature
 						if(f.classification() != Classification.LOOP
 								|| ! features.contains(f)){
 							features.add(f);
