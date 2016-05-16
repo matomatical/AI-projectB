@@ -12,31 +12,32 @@ import java.util.Random;
 
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-/** This agent plays the Game of Hexifence randomly, selecting any empty edge.
+/**
+ * This agent plays the Game of Hexifence randomly, selecting any empty edge.
  * 
  * @author Matt Farrugia [farrugiam]
- * @author Julian Tran   [juliant1]
+ * @author Julian Tran [juliant1]
  **/
-public class AgentRandom extends Agent{
+public class AgentRandom extends Agent {
 
-	/** Random number generator for selecting moves **/
-	private Random rng;
+  /** Random number generator for selecting moves **/
+  private Random rng;
 
-	/** Create a new AgentRandom, seeded with the current time (nanoTime()) **/
-	public AgentRandom(){
-		long seed = System.nanoTime();
-		rng = new Random(seed);
-	}
-	
-	/** Choose a random empty edge to play **/
-	@Override
-	public Edge getChoice(){
-		Edge[] edges = board.getEmptyEdges();
-		return edges[rng.nextInt(edges.length)];
-	}
+  /** Create a new AgentRandom, seeded with the current time (nanoTime()) **/
+  public AgentRandom() {
+    long seed = System.nanoTime();
+    rng = new Random(seed);
+  }
 
-	@Override
-	protected void update(Edge edge) {
-		// not keeping state! do nothing
-	}
+  /** Choose a random empty edge to play **/
+  @Override
+  public Edge getChoice() {
+    Edge[] edges = board.getEmptyEdges();
+    return edges[rng.nextInt(edges.length)];
+  }
+
+  @Override
+  protected void update(Edge edge) {
+    // not keeping state! do nothing
+  }
 }

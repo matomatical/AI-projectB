@@ -17,16 +17,20 @@ import java.util.Scanner;
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Board;
 
-/** A BoardReader that reads a board formatted in ASCII according to the
- *  Project Specification
- *  
+/**
+ * A BoardReader that reads a board formatted in ASCII according to the Project
+ * Specification
+ * 
  * @author Matt Farrugia [farrugiam]
- * @author Julian Tran   [juliant1]
+ * @author Julian Tran [juliant1]
  **/
 public class AsciiBoardReader implements BoardReader {
 
-  /** New board based on ASCII board input at filename
-   * @param filename Input filename (null for stdin)
+  /**
+   * New board based on ASCII board input at filename
+   * 
+   * @param filename
+   *          Input filename (null for stdin)
    **/
   @Override
   public Board makeBoard(String input) throws InvalidInputException {
@@ -78,14 +82,16 @@ public class AsciiBoardReader implements BoardReader {
     }
   }
 
-  /** Places edges on board according to input contained in scanner, which
-   *  should be formatted according to assignment specification.
+  /**
+   * Places edges on board according to input contained in scanner, which should
+   * be formatted according to assignment specification.
    * 
-   * @param scanner The scanner to take input from
-   * @throws InvalidSymbolException if a non-allowed symbol is detected at a
-   *         specific index.
-   * @throws NoSuchElementException if the scanner runs out of input before
-   * 		 reading is finished
+   * @param scanner
+   *          The scanner to take input from
+   * @throws InvalidSymbolException
+   *           if a non-allowed symbol is detected at a specific index.
+   * @throws NoSuchElementException
+   *           if the scanner runs out of input before reading is finished
    **/
   private void configure(Board board, Scanner scanner)
       throws InvalidSymbolException {

@@ -8,18 +8,19 @@
 
 package unimelb.farrugiulian.hexifence.board.boardreading;
 
-/** Custom exception to alert reader about some user-defined issue with their
- *  Board input
- *  
+/**
+ * Custom exception to alert reader about some user-defined issue with their
+ * Board input
+ * 
  * @author Matt Farrugia [farrugiam]
- * @author Julian Tran   [juliant1]
+ * @author Julian Tran [juliant1]
  **/
 public class InvalidInputException extends Exception {
-	
-	/** generated serial version uid */
-	private static final long serialVersionUID = 226857444666195940L;
 
-	public InvalidInputException(String message){
-		super("Invalid input: " + message);
-	}
+  /** generated serial version uid */
+  private static final long serialVersionUID = 226857444666195940L;
+
+  public InvalidInputException(String message) {
+    super("Invalid input: " + message);
+  }
 }
