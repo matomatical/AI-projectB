@@ -57,6 +57,11 @@ public class Feature {
 	 **/
 	protected Feature(Feature that, FeatureSet fs) {
 		
+		System.out.println("copying " + that + " connected to ");
+		for(Feature f : that.getFeatures()){
+			System.out.println("--> " + f);
+		}
+		
 		// keep the old type
 		this.type = that.type;
 		
@@ -66,6 +71,17 @@ public class Feature {
 		for(Cell cell : that.cells){ // oh and copy the OLD cells not new ones
 			this.add(cell); // takes care of adding the cells to the new map
 		}
+		
+		// oh yeah, and keep the ends!
+		this.nends = that.nends;
+		this.ends = that.ends;
+		
+		System.out.println("result: " + this + " connected to ");
+		for(Feature f : this.getFeatures()){
+			System.out.println("--> " + f);
+		}
+		
+		System.out.println();
 	}
 
 	/** Set the classification of this feature
