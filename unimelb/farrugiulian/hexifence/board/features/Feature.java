@@ -16,6 +16,12 @@ import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
+/**
+ * 
+ * @author Matt Farrugia
+ * @author Julian Tran
+ *
+ */
 public class Feature {
 
 	public enum Classification{
@@ -252,7 +258,7 @@ public class Feature {
 				
 			}
 			// for NOW we're just returning ANY old edge to open this feature
-			// but later we'll be a little more careful ;)	
+			// but later we'll be a little more careful ;)
 			return this.cells.element().getEmptyEdges()[0];
 		}		
 	}

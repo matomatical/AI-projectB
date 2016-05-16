@@ -1,7 +1,19 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package com.matomatical.hexifence.visual;
 
 import aiproj.hexifence.Move;
 
+/** Modified Referee class which can be used as a controller for a LibGDX Game
+ * 
+ * @author Matt Farrugia [farrugiam@student.unimelb.edu.au]
+ **/
 public class VisualReferee {
 
 	Move move;
@@ -11,6 +23,12 @@ public class VisualReferee {
 
 	boolean playing, silence;
 	
+	/** Create a new VisualReferee
+	 * @param dimension the board dimension to play on
+	 * @param p1 the first Player
+	 * @param p2 the second Player
+	 * @param silence true if you don't want the referee to print to stdout
+	 */
 	public VisualReferee(int dimension, VisualPlayer p1, VisualPlayer p2, boolean silence){
 		
 		// the players playing the game
@@ -45,7 +63,8 @@ public class VisualReferee {
 			// record the move
 			numMoves++;
 			if(!silence){
-				System.out.println("Player "+ num + " placing " + move.P +" at " + move.Row + ":" + move.Col);
+				System.out.println("Player "+ num +" placing "+ move.P
+											+" at "+ move.Row +":"+ move.Col);
 				// display the board according to this player
 				now.printBoard(System.out);
 			}
@@ -58,7 +77,7 @@ public class VisualReferee {
 				playing = false;
 				
 			} else if (result == 0){
-				// swap players for next turn		// switches 1 -> 2 -> 1 -> 2...
+				// swap players for next turn	  // switches 1 -> 2 -> 1 -> 2
 				temp = now; now = next; next = temp; num = 3 - num;
 			} else {
 				// player gets another turn! no swap
