@@ -54,13 +54,13 @@ public class Feature {
 	/** Create a new Feature based of an old one
 	 * @param that The old feature to copy
 	 * @param fs The feature set this new feature should belong to
-	 */
+	 **/
 	protected Feature(Feature that, FeatureSet fs) {
 		
 		// keep the old type
 		this.type = that.type;
 		
-		// but use the new featureset!
+		// but use the new featureset and map!
 		this.fs = fs;
 		
 		for(Cell cell : that.cells){ // oh and copy the OLD cells not new ones
@@ -70,7 +70,7 @@ public class Feature {
 
 	/** Set the classification of this feature
 	 * @param type to this classification
-	 */
+	 **/
 	protected void classify(Classification type){
 		this.type = type;
 	}
@@ -78,7 +78,7 @@ public class Feature {
 	/** Add a cell to this feature (automatically updates the feature map)
 	 * @param cell The cell to add
 	 * @return true iff this cell was not already inside this feature
-	 */
+	 **/
 	protected boolean add(Cell cell){
 		
 		if(cells.add(cell)){
