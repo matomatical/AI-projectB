@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.matomatical.util.QueueHashSet;
 
+import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
@@ -26,7 +27,7 @@ public class Feature {
 		this.fs = fs;
 	}
 	
-	public Feature(Feature that, FeatureSet fs) {
+	protected Feature(Feature that, FeatureSet fs) {
 		
 		// keep the old type
 		this.type = that.type;
@@ -61,6 +62,12 @@ public class Feature {
 		return nends == 2 && ends[0] == ends[1] && ends[0] != null;
 	}
 
+	private boolean isIsolated() {
+		// return true if both ends have been added and are both null
+		// this means consume has to keep ends up to date too !!
+		return nends == 2 && ends[0] == null && ends[1] == null;
+	}
+	
 	protected Cell[] getCells(){
 		return cells.toArray(new Cell[cells.size()]);
 	}
@@ -69,10 +76,16 @@ public class Feature {
 		return ends;
 	}
 
-	
-	/** e.g. 4-chain.consume(Piece.RED, true)
-	 * will modify the feature set so that BLUE opens the chain, RED scores two
-	 * points and then double-boxes the last 2 cells leaving them for BLUE
+	/** Modifies a FeatureSet so that this feature is captured, and resulting
+	 * changes to neighbouring features are made (e.g. longer chains forming at
+	 * intersections).
+	 * @param piece piece used to consume the chain (NOTE: not the piece
+	 * doing the opening of the chain! the other one)
+	 * @param boxing true for double-boxing (or double-double-boxing for loops)
+	 * (has no effect if double boxing is not possible)
+	 * @Example {@code myFourChain.consume(Piece.RED, true)}:
+	 * will modify the feature set so that BLUE opens the chain, RED captures
+	 * 2 cells and then double-boxes the last 2 cells leaving them for BLUE.
 	 * (net advantage change is 0)
 	 **/
 	public void consume(int piece, boolean boxing){
@@ -83,17 +96,43 @@ public class Feature {
 			return;
 		}
 		
+		// otherwise, there are still lots of cases to consider!		
+		// first, remove this feature from the featureset!
+		this.fs.remove(this);
+		
+		// now, if it's an isolated chain or loop, no other features care
 		if(this.type == Classification.ISO_LOOP){
-			// fs.remove(this);
-			
+			if(boxing && this.length() > 3){
+				// if we're boxing and this isn't a cluster, update the score
+				this.fs.score(piece, this.length() - 4); // length - 4 for me
+				this.fs.score(Board.other(piece),    4); // leaving 4 for you
+			} else {
+				this.fs.score(piece, this.length()); // all for me, thank you
+			}
+			return;
+		} else if (this.type == Classification.CHAIN && this.isIsolated()){ // TODO: keep correct when we merge!
+			if(boxing && this.length() > 1){
+				// if we're boxing and this isn't a short chain, update score
+				this.fs.score(piece, this.length() - 2); // length - 2 for me
+				this.fs.score(Board.other(piece),    2); // leaving 2 for you
+			} else {
+				this.fs.score(piece, this.length()); // all for me, thank you
+			}
+			return;
 		}
 		
-		if(this.type == Classification.CHAIN){
-			// consuming a chain
-		}
+		// 
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
-	
-	/** Selecting a feature for opening by returning an Edge that can be used
+		/** Selecting a feature for opening by returning an Edge that can be used
 	 *  to open it. 
 	 *  @param baiting True if you would like to return an edge that offers the
 	 *  oponent a chance to double box or false for you would like to prevent

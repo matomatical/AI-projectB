@@ -26,13 +26,21 @@ public class FeatureSet {
 	
 	int piece, advantage = 0;
 	
+	/** Get the difference in score from {@code piece}'s perspective
+	 * @param piece the piece to look at the advantage as
+	 * @return how many points ahead that piece is (and a negative number means
+	 * they are actually behind!)
+	 **/
 	public int score(int piece){
 		return advantage * ( (piece == this.piece) ? 1 : -1 );
 	}
+	/** Add some points to a piece's score and update the advantage
+	 * @param piece the piece gaining these cells
+	 * @param score the number of cells to add to that piece's score
+	 **/
 	public void score(int piece, int score){
-		advantage += score * ( (piece == this.piece) ? 1 : -1 );
+		advantage += score * ((piece == this.piece) ? 1 : -1);
 	}
-	
 	
 	private HashMap<Cell, Feature> map = new HashMap<Cell, Feature>();
 	
@@ -44,7 +52,11 @@ public class FeatureSet {
 		return this.map.get(cell);
 	}
 
-	
+	/** Create a FeatureSet based on a board
+	 * @param board A <b>post-lockdown</b> board to analyse for features 
+	 * @param piece We just need one piece to know which way to store the
+	 * advantage (doesn't actually make a difference)
+	 */
 	public FeatureSet(Board board, int piece){
 		
 		this.piece = piece;
@@ -70,7 +82,7 @@ public class FeatureSet {
 	/** FeatureSet copy constructor
 	 * Creates a copy of this featureset of limited depth: its features are new
 	 * but still reference cells from the same underlying Board as the original
-	 * @param that - FeatureSet to copy
+	 * @param fs the FeatureSet to copy
 	 **/
 	public FeatureSet(FeatureSet that){
 		
@@ -175,5 +187,20 @@ public class FeatureSet {
 		// mark this cell as visited
 		visited.add(cell);
 		return;
+	}
+
+	/** Removes a feature from this featureset and its cells from the map
+	 * @param feature the feature to remove
+	 */
+	protected void remove(Feature feature) {
+		// TODO could do this faster ?
+		features.remove(feature);
+		
+		// also need to remove all of its cells from the map
+		for(Cell cell : feature.getCells()){
+			map.remove(cell);
+		}
+		
+		// done!
 	}
 }
