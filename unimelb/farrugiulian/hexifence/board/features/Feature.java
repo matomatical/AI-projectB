@@ -302,23 +302,30 @@ public class Feature {
 	public Edge choose(boolean baiting){
 		
 		if(this.type == Classification.INTERSECTION){
+			System.err.println("Choose on an intersection! Return null.");
 			return null;
 			
-		} else {
-			if(baiting && this.length() == 2){
-				
-				
-				
-			} else {
-				
-				
-				
-			}
+		}
+		
+		if(this.length() == 2) {
 			
-			// for NOW we're just returning ANY old edge to open this feature
-			// but later we'll be a little more careful ;) TODO
-			return this.cells.element().getEmptyEdges()[0];
-		}		
+			// if this is length two, either of its cells will contain a secure
+			// and a baiting edge
+			Cell cell = this.cells.element();
+			
+			// iterate through the two edges and return the correct one
+			for(Edge edge : cell.getEmptyEdges()){
+				// if we're baiting and this is an edge edge or if we're
+				// not baiting and this is an inside egde (non edge edge)
+				if(baiting ^ (this == fs.unmap(edge.getOtherCell(cell)))){
+					return edge;
+				}
+			}			
+		}
+		
+		// if we get there then we are not length 2 and we can't really
+		// make this choice, return any old opening edge
+		return this.cells.element().getEmptyEdges()[0];
 	}
 	
 	/** Get this feature's neighbouring features
