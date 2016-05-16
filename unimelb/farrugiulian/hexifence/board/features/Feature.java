@@ -32,12 +32,12 @@ public class Feature {
 	private Classification type;
 	
 	/** the cells that make up this feature **/
-	private QueueHashSet<Cell> cells = new QueueHashSet<Cell>();
+	private QueueHashSet<Cell> cells;
 	
 	/** the number of ends that have been added to this feature so far **/
 	private int nends = 0;
 	/** the cells marking the ends of this feature **/
-	private Cell[] ends = new Cell[2];
+	private Cell[] ends;
 
 	/** the feature set that this feature belongs to **/
 	private FeatureSet fs;
@@ -49,6 +49,9 @@ public class Feature {
 	protected Feature(Classification type, FeatureSet fs){
 		this.type = type;
 		this.fs = fs;
+		
+		this.cells = new QueueHashSet<Cell>();
+		this.ends = new Cell[2];
 	}
 	
 	/** Create a new Feature based of an old one
@@ -57,34 +60,23 @@ public class Feature {
 	 **/
 	protected Feature(Feature that, FeatureSet fs) {
 		
-		System.out.println("copying " + that + " connected to ");
-		for(Feature f : that.getFeatures()){
-			System.out.println("--> " + f);
-		}
-		
 		// keep the old type
 		this.type = that.type;
 		
 		// but use the new featureset and map!
 		this.fs = fs;
 		
+		this.cells = new QueueHashSet<Cell>();
 		for(Cell cell : that.cells){ // oh and copy the OLD cells not new ones
 			this.add(cell); // takes care of adding the cells to the new map
 		}
 		
-		// oh yeah, and keep the ends!
+		// oh yeah, and keep the ends! deeply!
 		this.nends = that.nends;
 		this.ends = new Cell[2];
-		for(int i = 0; i < that.nends; i++){
+		for(int i = 0; i < 2; i++){
 			this.ends[i] = that.ends[i];
 		}
-		
-		System.out.println("result: " + this + " connected to ");
-		for(Feature f : this.getFeatures()){
-			System.out.println("--> " + f);
-		}
-		
-		System.out.println();
 	}
 
 	/** Set the classification of this feature
@@ -100,14 +92,11 @@ public class Feature {
 	 **/
 	protected boolean add(Cell cell){
 		
-		if(cells.add(cell)){
-			// the cell was not already inside the feature
-			this.fs.map(cell, this);
-			return true;
-		}
+		boolean added = cells.add(cell); 
 		
-		// this cell was already inside this feature
-		return false;
+		this.fs.map(cell, this);
+		
+		return added;
 	}
 	
 	/** Add a new end to this feature
