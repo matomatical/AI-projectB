@@ -126,31 +126,6 @@ public class FeatureSet {
 			this.features.add(new Feature(feature, this));
 			// takes care of adding the feature's cells to the new map too!
 		}
-		
-		System.out.println("And the old Map:");
-		for(Cell cell : that.map.keySet()){
-			System.out.println(cell + " maps to " + that.map.get(cell));
-		}
-		System.out.println();
-		
-		System.out.println("And the new Map:");
-		for(Cell cell : this.map.keySet()){
-			System.out.println(cell + " maps to " + this.map.get(cell));
-		}
-		
-		for(int i = 0; i < that.features.size(); i++){
-			
-			System.out.println("copied " + that.getFeature(i) + " connected to ");
-			for(Feature f : that.getFeature(i).getFeatures()){
-				System.out.println("--> " + f);
-			}
-			System.out.println("became " + this.getFeature(i) + " connected to ");
-			for(Feature f : this.getFeature(i).getFeatures()){
-				System.out.println("--> " + f);
-			}
-			
-			System.out.println();
-		}
 	}
 	
 	/** Classification algorithm that reads a board starting from a cell and
