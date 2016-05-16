@@ -16,7 +16,6 @@ import java.util.Stack;
 
 import com.matomatical.util.QueueHashSet;
 
-import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
@@ -166,7 +165,7 @@ public class DoubleAgent extends Agent {
   @Override
   public Edge getChoice() {
     // Free scoring cells are always safe to take
-    String color = super.piece == Piece.BLUE ? "Blue" : "Red";
+    // String color = super.piece == Piece.BLUE ? "Blue" : "Red";
     // System.out.println(color + " has " + numShortChains() + " short chains
     // left");
     if (freeScoring.size() > 0) {
@@ -181,7 +180,7 @@ public class DoubleAgent extends Agent {
     // then select moves that are safe
 
     if (safe.size() > 0) {
-      if (safe.size() < 20) {
+      if (safe.size() < 18) {
         Edge bestEdge = null;
         float bestValue;
         float testValue;
