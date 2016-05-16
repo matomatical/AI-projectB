@@ -272,8 +272,9 @@ public class AgentFarrugiulian extends Agent {
 	 * as they are not considering all possible or equivalently possible moves,
 	 * for example we do not consider sacrificing while safe edges remain)
 	 **/
+	boolean timeout;
 	private SearchPair<Edge> safeEdgeSearch(int piece) {
-		
+		timeout = false;
 		// base case / cutoff test; are we at lockdown?
 		if(! this.es.hasSafeEdges()){
 			return new SearchPair<Edge>(null, winner(piece));
@@ -291,7 +292,10 @@ public class AgentFarrugiulian extends Agent {
 			if(System.currentTimeMillis() - clock > MIDGAME_SEARCH_TIMEOUT){
 				// nope, give up and return an edge we have not tried yet
 				// (that way at least it is not definitely a losing edge)
-				System.out.println("Timeout, returning");
+				if (!timeout) {
+					System.out.println("Timeout, returning");
+					timeout = true;
+				}
 				return new SearchPair<Edge>(safes[safes.length - 1], piece);
 			}
 			
@@ -409,18 +413,6 @@ public class AgentFarrugiulian extends Agent {
 				smallestSacrifice = feature;
 			}
 		}
-		if (smallestSacrifice == null) {
-			for (Feature feature : features.getFeatures()) {
-				System.out.println(feature.toString());
-			}
-			try {
-				throw new IOException();
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-			while (true) {}
-		}
 		return smallestSacrifice;
 	}
 	
@@ -457,9 +449,6 @@ public class AgentFarrugiulian extends Agent {
 			}
 		}
 		// Return the winning piece
-		if (stage == GameStage.ENDGAME) {
-			System.out.println(features.score(Piece.BLUE));
-		}
 		return features.score(piece) > 0 ? piece : Board.other(piece);
 	}
 	

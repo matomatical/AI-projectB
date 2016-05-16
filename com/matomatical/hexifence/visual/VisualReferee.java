@@ -9,6 +9,7 @@
 package com.matomatical.hexifence.visual;
 
 import aiproj.hexifence.Move;
+import unimelb.farrugiulian.hexifence.board.Board;
 
 /** Modified Referee class which can be used as a model for a LibGDX Game
  * @author Matt Farrugia [farrugiam@student.unimelb.edu.au]
@@ -50,7 +51,8 @@ public class VisualReferee {
 	
 	public VisualBoard update() {
 		
-		if(numMoves == maxMoves){
+		if(numMoves == maxMoves && playing){
+			System.out.println("Winner is " + Board.name(p1.getWinner()));
 			playing = false;
 		}
 		
