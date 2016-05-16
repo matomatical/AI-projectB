@@ -38,6 +38,9 @@ import unimelb.farrugiulian.hexifence.board.features.*;
  *  		left.
  *  	</li>
  *  </ul>
+ *  
+ *  @author Matt Farrugia [farrugiam]
+ *  @author Julian Tran   [juliant1]
  **/
 public class AgentFarrugiulian extends Agent {
 	

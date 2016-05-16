@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 2/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.List;
@@ -11,7 +19,15 @@ import com.matomatical.util.QueueHashSet;
 
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
-
+ 
+/** This Agent plays the game with a Greedy heuristic; first capturing any
+ *  available cells, before choosing a random safe cell if one exists, before
+ *  offering the opponent the chance to score the fewest possible cells in its
+ *  next turn (by counting the cells captureable by each edge choice) 
+ * 
+ * @author Matt Farrugia [farrugiam]
+ * @author Julain Tran   [julaint1]
+ **/
 public class AgentGreedy extends Agent{
 	
 	private QueueHashSet<Edge> free;
@@ -155,48 +171,3 @@ public class AgentGreedy extends Agent{
 		return 1;
 	}
 }
-
-
-// old linear time move selection
-
-//// select cells that are free!
-//
-//for(Edge edge : edges){
-//	if(edge.numCapturableCells()>0){
-//		return edge;
-//	}
-//}
-//
-//// then select moves that wont sacrifice a cell
-//
-//int offset = rng.nextInt(edges.length);
-//
-//for(int i = 0; i < edges.length; i++){
-//	Edge edge = edges[(i + offset) % edges.length];
-//	
-//	boolean safe = true;
-//	Cell[] cells = edge.getCells();
-//	for(Cell cell : cells){
-//		if(cell.numFreeEdges() == 2){
-//			// this cell is not safe to capture around
-//			safe = false;
-//		}
-//	}
-//	if(safe){
-//		return edge;
-//	}
-//}
-
-// new hopefully-constant-time move selection
-
-//first select moves that will capture a cell
-
-//		if(free.size() > 0){
-//			return free.remove();
-//		}
-//		
-//		// then select moves that are safe
-//		
-//		if(safe.size() > 0){
-//			return safe.remove();
-//		}
