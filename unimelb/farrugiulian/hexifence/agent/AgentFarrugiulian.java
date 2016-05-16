@@ -8,7 +8,10 @@
 
 package unimelb.farrugiulian.hexifence.agent;
 
+import java.util.ArrayList;
 import java.util.Stack;
+
+import com.sun.xml.internal.fastinfoset.sax.Features;
 
 import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.*;
@@ -161,7 +164,7 @@ public class AgentFarrugiulian extends Agent {
 	
 	/** Returns the move to be made by the agent in the endgame */
 	private Edge endgameMove() {
-		Stack<Edge> stack = new Stack<Edge>();
+		/*Stack<Edge> stack = new Stack<Edge>();
 		consumeAll(stack);
 		int numShortChains = numShortChains();
 		while(!stack.isEmpty()){
@@ -173,9 +176,9 @@ public class AgentFarrugiulian extends Agent {
 		} else {
 			System.out.println("win");
 		}
-		while (true) {}
+		while (true) {}*/
 		// If we have edges we can capture
-		/*if (es.hasCapturingEdges()) {
+		if (es.hasCapturingEdges()) {
 			// Count the maximum number of cells we can take
 			Stack<Edge> stack = new Stack<Edge>();
 			int capturable = consumeAll(stack);
@@ -192,7 +195,7 @@ public class AgentFarrugiulian extends Agent {
 				while(!stack.isEmpty()){
 					board.unplace(stack.pop());
 				}
-				SearchPair<RichFeature> sp = featureSearch(fs, super.piece);
+				SearchPair<Feature> sp = featureSearch(fs, super.piece);
 				if (sp.piece == super.piece) {
 					// If double boxing makes us win, then double box (duh)
 					Cell[] cells = es.getCapturingEdge().getCells();
@@ -237,26 +240,26 @@ public class AgentFarrugiulian extends Agent {
 		
 		// We do not have edges we can capture, so we need to make a sacrifice
 		FeatureSet fs = new FeatureSet(board, super.piece);
-		SearchPair<RichFeature> sp = featureSearch(fs, super.piece);
+		SearchPair<Feature> sp = featureSearch(fs, super.piece);
 		if (sp.choice == null) {
 			if (sp.piece == super.piece) {
 				// No more intersected sacrifices and we should win
 				// Get the smallest chain
-				sp.choice = fs.getSmallestChain();
+				sp.choice = getSmallestSacrifice(fs);
 			} else {
 				// No more intersected sacrifices and we should lose
 				// Get a chain such that the last sacrifice is not a loop
 				// (not too sure how to do this just yet so just get the smallest chain)
-				sp.choice = fs.getSmallestChain();
+				sp.choice = getSmallestSacrifice(fs);
 			}
 		}
 		if (sp.piece == super.piece) {
 			// We should win so make the sacrifice securely
-			return sp.choice.secureOpen();
+			return sp.choice.choose(false);
 		} else {
 			// We should lose so make a baiting sacrifice
-			return sp.choice.baitOpen();
-		}*/
+			return sp.choice.choose(true);
+		}
 	}
 	
 	/** Performs a minimax search on the safe edges on the board until there
@@ -319,21 +322,22 @@ public class AgentFarrugiulian extends Agent {
 	 * @param piece
 	 * @return
 	 **/
-	/*private SearchPair<RichFeature> featureSearch(FeatureSet features, int piece) {
+	private SearchPair<Feature> featureSearch(FeatureSet features, int piece) {
 		int numIntersectedSacrifices = numIntersectedSacrifices(features);
 		if (numIntersectedSacrifices == 0) {
 			// Simple parity evaluation right now
-			int numSacrifices = numSacrifices(features);
-			int winningPiece = (piece == Piece.BLUE) ^ (numSacrifices % 2 == 0) ? Piece.BLUE : Piece.RED;
-			return new SearchPair<RichFeature>(null, winningPiece);
+			//int numSacrifices = numSacrifices(features);
+			//int winningPiece = (piece == Piece.BLUE) ^ (numSacrifices % 2 == 0) ? Piece.BLUE : Piece.RED;
+			int winningPiece = playout(features, piece);
+			return new SearchPair<Feature>(null, winningPiece);
 		}
 		
-		SearchPair<RichFeature> result = null;
+		SearchPair<Feature> result = null;
 		for (int i = 0; i < numIntersectedSacrifices; i++) {
 			FeatureSet featuresTmp = new FeatureSet(features);
-			takeFeature(getIntersectedSacrifices(featuresTmp).get(i));
+			getIntersectedSacrifices(featuresTmp).get(i).consume(Board.other(piece), false);
 			
-			SearchPair<RichFeature> pair = featureSearch(featuresTmp, Board.other(piece));
+			SearchPair<Feature> pair = featureSearch(featuresTmp, Board.other(piece));
 			
 			pair.choice = getIntersectedSacrifices(features).get(i);
 			if (pair.piece == piece){
@@ -345,7 +349,100 @@ public class AgentFarrugiulian extends Agent {
 		}
 		
 		return result;
-	}*/
+	}
+	
+	private ArrayList<Feature> getIntersectedSacrifices(FeatureSet features) {
+		ArrayList<Feature> intersectedSacrifices = new ArrayList<Feature>();
+		for (Feature feature : features.getFeatures()) {
+			if (feature.classification() == Feature.Classification.INTERSECTION) {
+				boolean shouldAdd = false;
+				for (Feature connection : feature.getFeatures()) {
+					if (connection.classification() == Feature.Classification.CHAIN
+							&& connection.length() < 3 && connection.getFeatures().size() == 2
+							&& (connection.getFeatures().get(0) != feature
+									|| connection.getFeatures().get(1) != feature)) {
+						shouldAdd = true;
+						break;
+					}
+				}
+				if (shouldAdd) {
+					for (Feature sacrifice : feature.getFeatures()) {
+						if (sacrifice.length() < 3) {
+							intersectedSacrifices.add(sacrifice);
+						}
+					}
+				}
+			}
+		}
+		return intersectedSacrifices;
+	}
+	
+	private int numIntersectedSacrifices(FeatureSet features) {
+		return getIntersectedSacrifices(features).size();
+	}
+	
+	private Feature getSmallestSacrifice(FeatureSet features) {
+		Feature smallestSacrifice = null;
+		for (Feature feature : features.getFeatures()) {
+			// Well this is a mouthful:
+			// If this feature is a chain that is not a loop OR is a loop that does
+			// not open up more sacrifices, then make it the smallest sacrifice
+			// if there is not a current smallest sacrifice, or if it is actually
+			// strictly smaller to it
+			// If this feature is an isolated loop, then make it the smallest
+			// sacrifice if there is not a current smallest sacrifice, or if it is 
+			// actually smaller or equal to it
+			if (feature.classification() == Feature.Classification.CHAIN
+					&& (feature.getFeatures().size() < 2
+							|| feature.getFeatures().get(0).getFeatures().size() > 3)
+					&& (smallestSacrifice == null
+							|| feature.length() < smallestSacrifice.length())
+					|| feature.classification() == Feature.Classification.ISO_LOOP
+					&& (smallestSacrifice == null
+							|| feature.length() <= smallestSacrifice.length())) {
+				smallestSacrifice = feature;
+			}
+		}
+		return smallestSacrifice;
+	}
+	
+	private int playout(FeatureSet features, int piece) {
+		int currentPiece = piece;
+		while (!features.isEmpty()) {
+			Feature smallestSacrifice = getSmallestSacrifice(features);
+			// Check if this smallest chain either an isolated loop of size 3,
+			if (smallestSacrifice.classification() == Feature.Classification.CHAIN
+					&& smallestSacrifice.length() < 3
+					&& (smallestSacrifice.getFeatures().size() < 2
+							|| smallestSacrifice.getFeatures().get(0).getFeatures().size() > 3)
+					|| smallestSacrifice.classification() == Feature.Classification.ISO_LOOP
+					&& smallestSacrifice.length() == 3) {
+				smallestSacrifice.consume(Board.other(currentPiece), false);
+				currentPiece = Board.other(currentPiece);
+			} else {
+				smallestSacrifice.consume(Board.other(currentPiece), true);
+				int numIsolatedClusters = numIsolatedClusters(features);
+				if (numIsolatedClusters % 2 == 1
+						^ numIsolatedClusters == features.getFeatures().size()) {
+					features.score(currentPiece, -2);
+					features.score(Board.other(currentPiece), 2);
+					currentPiece = Board.other(currentPiece);
+				}
+			}
+		}
+		return features.score(piece) > 0 ? piece : Board.other(piece);
+	}
+	
+	private int numIsolatedClusters(FeatureSet features) {
+		int numIsolatedClusters = 0;
+		for (Feature feature : features.getFeatures()) {
+			if (feature.classification() == Feature.Classification.ISO_LOOP
+					&& feature.length() == 3) {
+				numIsolatedClusters++;
+			}
+		}
+		return numIsolatedClusters;
+	}
 	
 	/** Evaluation function for the midgame search
 	 * @param piece
@@ -355,7 +452,12 @@ public class AgentFarrugiulian extends Agent {
 	 **/
 	private int winner(int piece){
 		//return Board.other(piece);
-		return (piece == Piece.BLUE) ^ (numShortChains() % 2 == 0) ? Piece.BLUE : Piece.RED;
+		//return (piece == Piece.BLUE) ^ (numShortChains() % 2 == 0) ? Piece.BLUE : Piece.RED;
+		
+		// Mate you thought you were done minimaxing? Sorry your evaluation function
+		// is another minimax...
+		FeatureSet features = new FeatureSet(board, piece);
+		return featureSearch(features, piece).piece;
 	}
 	
 	/** Return type class for searches in the midgame and endgame
