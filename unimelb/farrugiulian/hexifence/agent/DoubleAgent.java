@@ -39,17 +39,16 @@ import unimelb.farrugiulian.hexifence.board.Edge;
  **/
 public class DoubleAgent extends Agent implements Expert{
 	
-	private QueueHashSet<Edge> freeScoring;
-	private QueueHashSet<Edge> scoring;
-	private QueueHashSet<Edge> safe;
-	private HashMap<Edge, Integer> sacr;
+	/** HashSet for storing Edges **/
+	private QueueHashSet<Edge> freeScoring, scoring, safe, sacr;
 	
 	private int locked = 0;
 	
-	public DoubleAgent() {
-		
-	}
-	
+	/** Create a new double agent 
+	 * 
+	 * @param board
+	 * @param piece
+	 **/
 	public DoubleAgent(Board board, int piece) {
 		init(board.dimension, piece);
 		this.board = board;
@@ -65,7 +64,7 @@ public class DoubleAgent extends Agent implements Expert{
 			if (isSafe) {
 				safe.add(edge);
 			} else {
-				sacr.put(edge, sacrificeSize(edge));
+				sacr.add(edge);
 			}
 		}
 	}
@@ -80,7 +79,7 @@ public class DoubleAgent extends Agent implements Expert{
 		freeScoring = new QueueHashSet<Edge>();
 		scoring = new QueueHashSet<Edge>();
 		safe = new QueueHashSet<Edge>(edges);
-		sacr = new HashMap<Edge, Integer>(); // um how is this gonna work
+		sacr = new QueueHashSet<Edge>(); // um how is this gonna work
 		
 		return r;
 	}
@@ -107,7 +106,7 @@ public class DoubleAgent extends Agent implements Expert{
 				for(Edge e : cell.getEmptyEdges()){
 					// these edges are no longer safe!
 					if(safe.remove(e)){
-						sacr.put(e, sacrificeSize(e));
+						sacr.add(e);
 					} else if (freeScoring.remove(e)) {
 						// And if they were a free scoring edge, now they result in another
 						// scoring edge
@@ -117,7 +116,7 @@ public class DoubleAgent extends Agent implements Expert{
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
 				Edge e = cell.getEmptyEdges()[0];
-				if(sacr.remove(e) != null){
+				if(sacr.remove(e)){
 					// But what type of free? It depends on whether the other cell is
 					// a sacrifice or not
 					if (e.getOtherCell(cell) != null
