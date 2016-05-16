@@ -248,4 +248,27 @@ public class FeatureSet {
 		
 		// done!
 	}
+	
+	public String toString(){
+		
+		String output = "Welcome to this feature. The map looks like:\n";
+		
+		for(Cell cell : this.map.keySet()){
+			output += cell + " maps to " + this.map.get(cell) + "\n";
+		}
+		
+		output += "\nAnd the features look like:\n";
+		
+		for(Feature feature : features){
+			
+			output += feature.toString() + " connected to: \n";
+			for(Feature f : feature.getFeatures()){
+				output += "--> " + f.toString() + "\n";
+			}
+			
+			output += "\n";
+		}
+		
+		return output;
+	}
 }
