@@ -1,44 +1,61 @@
-AI assignment
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *                               Comments.txt                                *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 Marks:
 
-4 - quality of code and comments (comments.txt? ask lida)
-
-4 - correctness and reliability (detecting and not making illegal moves)
-
-7 - results of testing
-
-7 - "creativity of solution"
-
-comments.txt
+    4 - quality of code and comments (comments.txt? ask lida)
+    4 - correctness and reliability (detecting and not making illegal moves)
+    7 - results of testing
+    7 - "creativity of solution"
 	
-	- skype discussions and screenshots and paper and stuff (46 + 5 + 59 + 39 mins so far, plus 57 + 2:53)
+Structure of Solution
 
-	- talking about visualisation engine
+    Packages and all that
+
+Discussion of our Agent
 
 	- approach to opening (when to transition)
-	- approach to midgame (search? αβ? MC? nims? nega?)
-		- evaluation function based on a fast playout? parity?
-	- approach to endgame
+	- approach to midgame (approximate search)
+	- approach to endgame (heuristic playouts)
 
-	- explain other parts of our code?
+Our Agent's Data Structures
 
+    - Data Structures
+        - EdgeSet making initial decisions take constant time to save on time
+        - FeatureSet massively reduces branching factor by collecting equivalent moves towards the end of the game
 
-'after we finished talking about 4-loops, julian was struggling with for-loops'
+Our Other Agents
 
+    - AgentMe
+    - AgentRandom
+    - AgentGreedy
+    - DoubleAgent
 
+    which all really influenced the final design of AgentFarrugiulian
 
-// TODO: PERHAPS CONSIDER SACRIFICING TO SWITCH PARITY,
-//       IF ALL EVALUATIONS TURN OUT BAD?
-// 		 HMM, CAN SACRIFICING EARLY ACTUALLY MAKE A DIFFERENCE?
+Other Creative Aspects: The Hexifence Visualisation Engine
 
-// if(sp.value >= 0){
-//	return sp.edge;
-// } else {
-//	// search sacrifices? 
-// }
+    - Using LibGDX to render the board, also using a specialised Referee and specialised interfaces for Players and Boards so that I guess anyone could plug their solution into the visualiser
+    
+Other Creative Aspects: Possible Extensions and Research and stuff
 
-// it goes deeper, we'll need to search within minimax too or we'll
-// be blind to sacrifices by the opponent at each level (damn!)
+    - Monte Carlo and Nims and stuff like that
+    
+    - Endgame Search more and stuff like that
+    
+    - Transposition table and Lexicographic Pruning (even though the latter of which turns out to be a dud!)
 
-// TODO: TRY MONTE-CARLO TOO, IF WE HAVE TIME
+Fun times:
+
+    Skype discussions and screenshots and paper and stuff (46 + 5 + 59 + 39 mins so far, plus 57 + 2:53, plus 1:28 + 1:27 + 11 + 3:34 + 46, plus 1:52 + 14 + ...)
+
+    'after we finished talking about 4-loops, julian was struggling with for-loops'
+
+    Independently both accidentally completing the midgame search function on the same morning.
