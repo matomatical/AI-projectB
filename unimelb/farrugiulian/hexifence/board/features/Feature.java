@@ -57,9 +57,9 @@ public class Feature {
 	 **/
 	protected Feature(Feature that, FeatureSet fs) {
 		
-		System.out.println("copying " + that + " connected to ");
+		//System.out.println("copying " + that + " connected to ");
 		for(Feature f : that.getFeatures()){
-			System.out.println("--> " + f);
+			//System.out.println("--> " + f);
 		}
 		
 		// keep the old type
@@ -79,12 +79,12 @@ public class Feature {
 			this.ends[i] = that.ends[i];
 		}
 		
-		System.out.println("result: " + this + " connected to ");
+		//System.out.println("result: " + this + " connected to ");
 		for(Feature f : this.getFeatures()){
-			System.out.println("--> " + f);
+			//System.out.println("--> " + f);
 		}
 		
-		System.out.println();
+		//System.out.println();
 	}
 
 	/** Set the classification of this feature

@@ -92,7 +92,7 @@ public class FeatureSet {
 	 **/
 	public FeatureSet(Board board, int piece){
 		
-		System.out.println("Making a new featureset " + this);
+		//System.out.println("Making a new featureset " + this);
 		
 		this.piece = piece;
 		
@@ -121,7 +121,7 @@ public class FeatureSet {
 	 **/
 	public FeatureSet(FeatureSet that){
 		
-		System.out.println("Making a new featureset copy of " + that);
+		//System.out.println("Making a new featureset copy of " + that);
 		
 		this.piece = that.piece;
 		this.advantage = that.advantage;
