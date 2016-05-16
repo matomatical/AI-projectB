@@ -16,57 +16,87 @@ import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-/** 
- * 
+/** A board feature (for example, an intersection, chain or loop) for making
+ *  late-game decisions
+ *  
  * @author Matt Farrugia
  * @author Julian Tran
  */
 public class Feature {
 	
+	/** The possible types of classification a feature can have **/
 	public enum Classification{
 		CHAIN, ISO_LOOP, LOOP, INTERSECTION, OPEN
 	}
+	/** This feature's classification **/
 	private Classification type;
 	
+	/** the cells that make up this feature **/
 	private QueueHashSet<Cell> cells = new QueueHashSet<Cell>();
 	
+	/** the number of ends that have been added to this feature so far **/
 	private int nends = 0;
+	/** the cells marking the ends of this feature **/
 	private Cell[] ends = new Cell[2];
 
+	/** the feature set that this feature belongs to **/
 	private FeatureSet fs;
 	
+	/** Create a new, empty Feature
+	 * @param type The classification of this feature
+	 * @param fs The FeatureSet it belongs to
+	 **/
 	protected Feature(Classification type, FeatureSet fs){
 		this.type = type;
 		this.fs = fs;
 	}
 	
+	/** Create a new Feature based of an old one
+	 * @param that The old feature to copy
+	 * @param fs The feature set this new feature should belong to
+	 */
 	protected Feature(Feature that, FeatureSet fs) {
 		
 		// keep the old type
 		this.type = that.type;
 		
-		// but use the new featureset! ;)
+		// but use the new featureset!
 		this.fs = fs;
 		
-		for(Cell cell : that.cells){
+		for(Cell cell : that.cells){ // oh and copy the OLD cells not new ones
 			this.add(cell); // takes care of adding the cells to the new map
 		}
 	}
 
+	/** Set the classification of this feature
+	 * @param type to this classification
+	 */
 	protected void classify(Classification type){
 		this.type = type;
 	}
 	
+	/** Add a cell to this feature (automatically updates the feature map)
+	 * @param cell The cell to add
+	 * @return true iff this cell was not already inside this feature
+	 */
 	protected boolean add(Cell cell){
 		
 		if(cells.add(cell)){
+			// the cell was not already inside the feature
 			this.fs.map(cell, this);
 			return true;
 		}
 		
+		// this cell was already inside this feature
 		return false;
 	}
 	
+	/** Add a new end to this feature
+	 * @param cell the cell marking the end of the feature (or null for side of
+	 * board)
+	 * @return true if this (non-null) end has already been added (because both
+	 * ends are now non-null and the same) marking an intersected loop
+	 **/
 	protected boolean end(Cell cell){
 		ends[nends++] = cell; // may be null
 		
@@ -75,14 +105,14 @@ public class Feature {
 		return nends == 2 && ends[0] == ends[1] && ends[0] != null;
 	}
 	
+	/** Get an array of the cells in this feature **/
 	protected Cell[] getCells(){
 		return cells.toArray(new Cell[cells.size()]);
 	}
 	
-	protected Cell[] getEnds() {
-		return ends;
-	}
-
+	/** Is this feature isolated?
+	 * @return true iff this feature is isolated (has no neighbouring features)
+	 **/
 	private boolean isIsolated() {
 		return this.getFeatures().isEmpty();
 	}
@@ -90,10 +120,13 @@ public class Feature {
 	/** Modifies a FeatureSet so that this feature is captured, and resulting
 	 * changes to neighbouring features are made (e.g. longer chains forming at
 	 * intersections).
+	 * 
 	 * @param piece piece used to consume the chain (NOTE: not the piece
 	 * doing the opening of the chain! the other one)
+	 * 
 	 * @param boxing true for double-boxing (or double-double-boxing for loops)
 	 * (has no effect if double boxing is not possible)
+	 * 
 	 * @Example {@code myFourChain.consume(Piece.RED, true)}:
 	 * will modify the feature set so that BLUE opens the chain, RED captures
 	 * 2 cells and then double-boxes the last 2 cells leaving them for BLUE.
@@ -238,7 +271,7 @@ public class Feature {
 	}
 	
 	/** Selecting a feature for opening by returning an Edge that can be used
-	 *  to open it. 
+	 *  to open it.
 	 *  @param baiting True if you would like to return an edge that offers the
 	 *  oponent a chance to double box or false for you would like to prevent
 	 *  double boxing (actually, that only works for two-chains
@@ -257,16 +290,19 @@ public class Feature {
 				
 			}
 			// for NOW we're just returning ANY old edge to open this feature
-			// but later we'll be a little more careful ;)
+			// but later we'll be a little more careful ;) TODO
 			return this.cells.element().getEmptyEdges()[0];
 		}		
 	}
 	
-	/** 
+	/** Get this feature's neighbouring features
 	 * @return An ArrayList of Features connected to this Feature
 	 **/
 	public ArrayList<Feature> getFeatures(){
+		
+		// case 1: it's an intersection, it must have some features nearby
 		if(type == Classification.INTERSECTION){
+		
 			// this is an intersection! returns its neighbouring features
 			Cell cell = cells.element();
 			
@@ -291,7 +327,9 @@ public class Feature {
 			}
 			
 			return features;
-			
+		
+		
+		// case 2: it's not an intersection, it may have intersections nearby
 		} else {
 			// this is not an intersection! return its non-null ending features
 			
@@ -314,14 +352,17 @@ public class Feature {
 		}
 	}
 
+	/** The classification of this feature **/
 	public Classification classification(){
 		return this.type;
 	}
 
+	/** The length of this feature (in cells) **/
 	public int length(){
 		return cells.size();
 	}
 	
+	/** Format this feature's classification, length and contained cells **/
 	public String toString(){
 		return type.name() +" of length "+ length() +": "+ cells.toString();
 	}
