@@ -16,7 +16,9 @@ package unimelb.farrugiulian.hexifence.board.boardreading;
  */
 public class InvalidSymbolException extends Exception {
 	
-	
+	/** Generated serial version uid **/
+	private static final long serialVersionUID = -8365606279059739723L;
+
 	/** Create an exception to repseresnt a particular symbol mismatch at some
 	 * index. Creates an informative message to describe the mismatch.
 	 * @param i row index where encountered

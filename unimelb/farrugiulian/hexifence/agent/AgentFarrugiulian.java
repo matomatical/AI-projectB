@@ -499,15 +499,6 @@ public class AgentFarrugiulian extends Agent {
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	// Old helper functions
 	
 	//Works ONLY if the scoring QueueHashSet is accurate
@@ -529,59 +520,6 @@ public class AgentFarrugiulian extends Agent {
 		return capturable;
 	}
 	
-	private int numShortChains() {
-		int numShortChains = 0;
-		Stack<Edge> stack = new Stack<Edge>();
-		// Keep taking short chains while keeping count
-		while(takeShortChain(stack) != 0) {
-			numShortChains++;
-		}
-		if (board.getEmptyEdges().length == 0) {
-			numShortChains++;
-		}
-		// Undo all moves made while testing
-		while(!stack.isEmpty()){
-			board.unplace(stack.pop());
-		}
-		return numShortChains;
-	}
-	
-	private int takeShortChain(Stack<Edge> stack) {
-		Edge[] edges = board.getEmptyEdges();
-		
-		if (edges.length == 0) {
-			return 0;
-		}
-		
-		// Find the edge that sacrifices the least number of cells
-		Edge bestEdge = null;
-		int bestCost = 10000;
-		
-		for(int i = 0; i < edges.length; i++){
-			Edge edge = edges[i];
-			// Only consider edges that don't score
-			if (edge.getCells()[0].numEmptyEdges() > 1 && (edge.getCells().length == 1
-					|| edge.getCells()[1].numEmptyEdges() > 1)){
-				int cost = sacrificeSize(edge);
-				if(cost < bestCost || cost == 3 && isLoop(edge) && bestCost >= 3){
-					bestEdge = edge;
-					bestCost = cost;
-				}
-			}
-		}
-		// If this chain is short, take it and return how many cells it had 
-		if (bestCost < 3 || bestCost == 3 && isLoop(bestEdge)) {
-			bestEdge.place(super.opponent);
-			stack.push(bestEdge);
-			//System.out.println(bestEdge.i + "," + bestEdge.j);
-			for(Cell cell : bestEdge.getCells()){
-				sacrifice(cell, stack);
-			}
-			return bestCost;
-		}
-		return 0; // No short chains left
-	}
-
 	private int sacrificeSize(Edge edge) {
 		int size = 0;
 		Stack<Edge> stack = new Stack<Edge>();
