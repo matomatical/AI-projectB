@@ -74,7 +74,10 @@ public class Feature {
 		
 		// oh yeah, and keep the ends!
 		this.nends = that.nends;
-		this.ends = that.ends;
+		this.ends = new Cell[2];
+		for(int i = 0; i < that.nends; i++){
+			this.ends[i] = that.ends[i];
+		}
 		
 		System.out.println("result: " + this + " connected to ");
 		for(Feature f : this.getFeatures()){
