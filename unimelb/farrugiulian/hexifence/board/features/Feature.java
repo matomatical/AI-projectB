@@ -197,12 +197,21 @@ public class Feature {
 					
 					last.add(intersection.cells.element());
 					last.classify(Classification.ISO_LOOP);
+					// also wipe this loop's ends
+					last.nends = 0;
+					
 				} else if(last.classification() == Classification.CHAIN){
 					// otherwise, if it's a chain, we should be consuming
 					// it, too!
 					
 					last.add(intersection.cells.element());
-					// is it safe to recursively call at this point? TODO
+					
+					// wipe this end from the chain
+					for(int i = 0; i < last.nends; i++){
+						if(last.ends[i] == intersection.cells.element()){
+							last.ends[i] = null;
+						}
+					}
 					
 					// we've already accounted for double boxing, so lets
 					// make sure we grab all of these!
