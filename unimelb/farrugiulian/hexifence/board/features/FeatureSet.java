@@ -66,7 +66,7 @@ public class FeatureSet {
 	 * @param piece the piece gaining these cells
 	 * @param score the number of cells to add to that piece's score
 	 **/
-	protected void score(int piece, int score){
+	public void score(int piece, int score){
 		advantage += score * ((piece == this.piece) ? 1 : -1);
 	}
 	
