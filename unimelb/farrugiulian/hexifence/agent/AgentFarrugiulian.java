@@ -332,6 +332,8 @@ public class AgentFarrugiulian extends Agent {
 		SearchPair<Feature> result = null;
 		for (int i = 0; i < numIntersectedSacrifices; i++) {
 			FeatureSet featuresTmp = new FeatureSet(features);
+			System.out.println("Original num: " + numIntersectedSacrifices(features));
+			System.out.println("New num: " + numIntersectedSacrifices(featuresTmp));
 			getIntersectedSacrifices(featuresTmp).get(i).consume(Board.other(piece), false);
 			
 			SearchPair<Feature> pair = featureSearch(featuresTmp, Board.other(piece));
@@ -355,11 +357,8 @@ public class AgentFarrugiulian extends Agent {
 				boolean shouldAdd = false;
 				for (Feature connection : feature.getFeatures()) {
 					if (connection.classification() == Feature.Classification.CHAIN
-							&& connection.length() < 3 && connection.getFeatures().size() == 2
-							&& (connection.getFeatures().get(0) != feature
-									|| connection.getFeatures().get(1) != feature)) {
+							&& connection.length() < 3 && connection.getFeatures().size() == 2) {
 						shouldAdd = true;
-						break;
 					}
 				}
 				if (shouldAdd) {
@@ -391,7 +390,6 @@ public class AgentFarrugiulian extends Agent {
 			// If this feature is an isolated loop that has length less than or equal
 			// to the current smallest sacrifice, then update
 			if (feature.classification() == Feature.Classification.CHAIN
-					&& feature.getFeatures().size() < 2
 					&& (smallestSacrifice == null
 							|| feature.length() < smallestSacrifice.length())
 					|| feature.classification() == Feature.Classification.LOOP
@@ -408,12 +406,12 @@ public class AgentFarrugiulian extends Agent {
 				smallestSacrifice = feature;
 			}
 		}
-		/*if (smallestSacrifice == null) {
+		if (smallestSacrifice == null) {
 			for (Feature feature : features.getFeatures()) {
 				System.out.println(feature.toString());
 			}
 			while (true) {}
-		}*/
+		}
 		return smallestSacrifice;
 	}
 	
