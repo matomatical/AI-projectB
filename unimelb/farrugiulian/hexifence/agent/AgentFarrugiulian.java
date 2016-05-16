@@ -364,7 +364,7 @@ public class AgentFarrugiulian extends Agent {
 				}
 				if (shouldAdd) {
 					for (Feature sacrifice : feature.getFeatures()) {
-						if (sacrifice.length() < 3) {
+						if (sacrifice.length() < 3 && !intersectedSacrifices.contains(sacrifice)) {
 							intersectedSacrifices.add(sacrifice);
 						}
 					}
@@ -382,16 +382,24 @@ public class AgentFarrugiulian extends Agent {
 		Feature smallestSacrifice = null;
 		for (Feature feature : features.getFeatures()) {
 			// Well this is a mouthful:
-			// If this feature is a chain that is not a loop OR is a loop that does
-			// not open up more sacrifices, then make it the smallest sacrifice
-			// if there is not a current smallest sacrifice, or if it is actually
-			// strictly smaller to it
-			// If this feature is an isolated loop, then make it the smallest
-			// sacrifice if there is not a current smallest sacrifice, or if it is 
-			// actually smaller or equal to it
+			// If this feature is a chain that has length strictly less than the
+			// current smallest sacrifice, then update
+			// If this feature is a loop that is a sensible sacrifice (the
+			// intersection it connects to has at least 3 features, or it has another
+			// loop) and has length strictly less than the current smallest sacrifice,
+			// them update
+			// If this feature is an isolated loop that has length less than or equal
+			// to the current smallest sacrifice, then update
 			if (feature.classification() == Feature.Classification.CHAIN
-					&& (feature.getFeatures().size() < 2
-							|| feature.getFeatures().get(0).getFeatures().size() > 3)
+					&& feature.getFeatures().size() < 2
+					&& (smallestSacrifice == null
+							|| feature.length() < smallestSacrifice.length())
+					|| feature.classification() == Feature.Classification.LOOP
+					&& (feature.getFeatures().get(0).getFeatures().size() >= 3
+							|| feature.getFeatures().get(0).getFeatures().get(0) != feature
+									&& feature.getFeatures().get(0).getFeatures().get(0).classification() == Feature.Classification.LOOP
+							|| feature.getFeatures().get(0).getFeatures().get(1) != feature
+									&& feature.getFeatures().get(0).getFeatures().get(1).classification() == Feature.Classification.LOOP)
 					&& (smallestSacrifice == null
 							|| feature.length() < smallestSacrifice.length())
 					|| feature.classification() == Feature.Classification.ISO_LOOP
@@ -400,6 +408,12 @@ public class AgentFarrugiulian extends Agent {
 				smallestSacrifice = feature;
 			}
 		}
+		/*if (smallestSacrifice == null) {
+			for (Feature feature : features.getFeatures()) {
+				System.out.println(feature.toString());
+			}
+			while (true) {}
+		}*/
 		return smallestSacrifice;
 	}
 	
@@ -407,29 +421,37 @@ public class AgentFarrugiulian extends Agent {
 		int currentPiece = piece;
 		while (!features.isEmpty()) {
 			Feature smallestSacrifice = getSmallestSacrifice(features);
-			// Check if this smallest chain either an isolated loop of size 3,
-			if (smallestSacrifice.classification() == Feature.Classification.CHAIN
+			// Check if this smallest chain either an isolated loop of size 3, or a
+			// chain or loop of size less than 3 (we are asssuming that any loop being
+			// considered is a sensible sacrifice)
+			if ((smallestSacrifice.classification() == Feature.Classification.CHAIN
+					|| smallestSacrifice.classification() == Feature.Classification.LOOP)
 					&& smallestSacrifice.length() < 3
-					&& (smallestSacrifice.getFeatures().size() < 2
-							|| smallestSacrifice.getFeatures().get(0).getFeatures().size() > 3)
 					|| smallestSacrifice.classification() == Feature.Classification.ISO_LOOP
 					&& smallestSacrifice.length() == 3) {
+				// We cannot double box these sacrifices, so next player's turn
 				smallestSacrifice.consume(Board.other(currentPiece), false);
 				currentPiece = Board.other(currentPiece);
 			} else {
+				// We double box these sacrifices
 				smallestSacrifice.consume(Board.other(currentPiece), true);
 				int numIsolatedClusters = numIsolatedClusters(features);
+				// But maybe it is not a good idea to, because this sacrifice may
+				// create isolated 3 clusters, or end the game
 				if (numIsolatedClusters % 2 == 1
 						^ numIsolatedClusters == features.getFeatures().size()) {
+					// Fix up the score and the current player as if we did not double box
 					features.score(currentPiece, -2);
 					features.score(Board.other(currentPiece), 2);
 					currentPiece = Board.other(currentPiece);
 				}
 			}
 		}
+		// Return the winning piece
 		return features.score(piece) > 0 ? piece : Board.other(piece);
 	}
 	
+	// Counts the number of isolated clusters
 	private int numIsolatedClusters(FeatureSet features) {
 		int numIsolatedClusters = 0;
 		for (Feature feature : features.getFeatures()) {
