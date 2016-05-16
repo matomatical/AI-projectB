@@ -59,7 +59,6 @@ public class Feature {
 	 * @param fs The feature set this new feature should belong to
 	 **/
 	protected Feature(Feature that, FeatureSet fs) {
-		
 		// keep the old type
 		this.type = that.type;
 		

@@ -8,6 +8,7 @@
 
 package unimelb.farrugiulian.hexifence.agent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -104,6 +105,12 @@ public class AgentFarrugiulian extends Agent {
 	
 		// no matter the game stage, capture any consequence-free cells
 		if(es.hasFreeEdges()){
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return es.getFreeEdge();
 		}
 		
@@ -117,6 +124,12 @@ public class AgentFarrugiulian extends Agent {
 			return midgameMove();
 			
 		case ENDGAME:
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			return endgameMove();
 		}
 	}
@@ -192,8 +205,9 @@ public class AgentFarrugiulian extends Agent {
 				while(!stack.isEmpty()){
 					board.unplace(stack.pop());
 				}
-				SearchPair<Feature> sp = featureSearch(fs, super.piece);
+				SearchPair<Feature> sp = featureSearch(fs, Board.other(piece));
 				if (sp.piece == super.piece) {
+					System.out.println("Double boxing");
 					// If double boxing makes us win, then double box (duh)
 					Cell[] cells = es.getCapturingEdge().getCells();
 					Cell cell;
@@ -210,6 +224,7 @@ public class AgentFarrugiulian extends Agent {
 						return cell.getEmptyEdges()[0];
 					}
 				} else {
+					System.out.println("Not double boxing");
 					// If double boxing does not make us win, then take the cells
 					// Sure it may not make us win either, but perhaps the opponent does
 					// not need to throw as hard to let us win if we get more score now
@@ -239,6 +254,7 @@ public class AgentFarrugiulian extends Agent {
 		FeatureSet fs = new FeatureSet(board, super.piece);
 		SearchPair<Feature> sp = featureSearch(fs, super.piece);
 		if (sp.choice == null) {
+			fs = new FeatureSet(board, super.piece);
 			if (sp.piece == super.piece) {
 				// No more intersected sacrifices and we should win
 				// Get the smallest chain
@@ -332,8 +348,6 @@ public class AgentFarrugiulian extends Agent {
 		SearchPair<Feature> result = null;
 		for (int i = 0; i < numIntersectedSacrifices; i++) {
 			FeatureSet featuresTmp = new FeatureSet(features);
-			System.out.println("Original num: " + numIntersectedSacrifices(features));
-			System.out.println("New num: " + numIntersectedSacrifices(featuresTmp));
 			getIntersectedSacrifices(featuresTmp).get(i).consume(Board.other(piece), false);
 			
 			SearchPair<Feature> pair = featureSearch(featuresTmp, Board.other(piece));
@@ -409,6 +423,12 @@ public class AgentFarrugiulian extends Agent {
 		if (smallestSacrifice == null) {
 			for (Feature feature : features.getFeatures()) {
 				System.out.println(feature.toString());
+			}
+			try {
+				throw new IOException();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
 			}
 			while (true) {}
 		}

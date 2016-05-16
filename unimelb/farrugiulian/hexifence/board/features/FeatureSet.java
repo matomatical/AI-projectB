@@ -91,7 +91,6 @@ public class FeatureSet {
 	 * advantage (doesn't actually make a difference)
 	 **/
 	public FeatureSet(Board board, int piece){
-		
 		this.piece = piece;
 		
 		// perform a specialised DFS over cells to construct our collection of
@@ -118,7 +117,6 @@ public class FeatureSet {
 	 * @param fs the FeatureSet to copy
 	 **/
 	public FeatureSet(FeatureSet that){
-		
 		this.piece = that.piece;
 		this.advantage = that.advantage;
 		
