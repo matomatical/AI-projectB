@@ -61,12 +61,6 @@ public class Feature {
 		// (non-isolated loop)
 		return nends == 2 && ends[0] == ends[1] && ends[0] != null;
 	}
-
-	private boolean isIsolated() {
-		// return true if both ends have been added and are both null
-		// this means consume has to keep ends up to date too !!
-		return nends == 2 && ends[0] == null && ends[1] == null;
-	}
 	
 	protected Cell[] getCells(){
 		return cells.toArray(new Cell[cells.size()]);
@@ -76,6 +70,10 @@ public class Feature {
 		return ends;
 	}
 
+	private boolean isIsolated() {
+		return this.getFeatures().isEmpty();
+	}
+	
 	/** Modifies a FeatureSet so that this feature is captured, and resulting
 	 * changes to neighbouring features are made (e.g. longer chains forming at
 	 * intersections).
@@ -110,7 +108,8 @@ public class Feature {
 				this.fs.score(piece, this.length()); // all for me, thank you
 			}
 			return;
-		} else if (this.type == Classification.CHAIN && this.isIsolated()){ // TODO: keep correct when we merge!
+		} else if (this.type == Classification.CHAIN && this.isIsolated()){
+			
 			if(boxing && this.length() > 1){
 				// if we're boxing and this isn't a short chain, update score
 				this.fs.score(piece, this.length() - 2); // length - 2 for me
@@ -121,18 +120,102 @@ public class Feature {
 			return;
 		}
 		
-		// 
+		// okay, so far so good, but what if it's an intersecting feature!?
+		// it may be okay, if the intersections have enough remaining chains...
+		// no matter what, we're going to score this feature like a chain
+		// (since it's not an isoloop)
 		
-		
-		
-		
-		
-		
-		
-		
-		
+		if(boxing && this.length() > 1){
+			// if we're boxing and this isn't a short chain, update score
+			this.fs.score(piece, this.length() - 2); // length - 2 for me
+			this.fs.score(Board.other(piece),    2); // leaving 2 for you
+		} else {
+			this.fs.score(piece, this.length()); // all for me, thank you
+		}
+
+		// now, for each intersection coming off it,
+		for(Feature intersection : this.getFeatures()){
+			// analyse this intersection's remaining features to decide if
+			// further changes need to be made!
+			ArrayList<Feature> features = intersection.getFeatures();
+			
+			if(features.size() > 2){
+				// this intersection is definitely still in tact! it's actually
+				// as if we were an isolated chain!
+				// nothing more to do here...
+				return;
+				
+			} else if (features.size() == 2){
+				// if either feature is a loop, we're still in tact!
+				for(Feature feature : features){
+					if(feature.classification() == Classification.LOOP){
+						// we're still good!
+						
+						return;
+					}
+				}
+				
+				// if we make it to here, there are no loops! we're looking at
+				// two chains that need to be merged
+				Feature a = features.get(0);
+				Feature b = features.get(1);
+
+				// remove a and intersection from the set
+				this.fs.remove(intersection);
+				this.fs.remove(a);
+				
+				// be careful with ends!!!
+				// set b's end which IS intersection to a's end which IS NOT				
+				for(int i = 0; i < a.nends; i++){
+					if(a.ends[i] != intersection.cells.element()){
+						// found the right and of a!
+						for(int j = 0; i < b.nends; j++){
+							if(b.ends[j] == intersection.cells.element()){
+								// found the right end of b!
+								b.ends[j] = a.ends[i];
+							}
+						}
+					}
+				}
+				
+				// add a and intersection's cells to b
+				for(Cell cell : a.getCells()){
+					b.add(cell);
+				}
+				b.add(intersection.cells.element());
+				
+				
+			} else if (features.size() < 2){
+				Feature last = features.get(0);
+				
+				// either way, this intersection is no longer an intersection
+				this.fs.remove(intersection);
+				
+				if(last.classification() == Classification.LOOP){
+					// if this feature is a loop, we have to add the
+					// final cell to it and turn it into an iso loop
+					
+					last.add(intersection.cells.element());
+					last.classify(Classification.ISO_LOOP);
+				} else if(last.classification() == Classification.CHAIN){
+					// otherwise, if it's a chain, we should be consuming
+					// it, too!
+					
+					last.add(intersection.cells.element());
+					// is it safe to recursively call at this point? TODO
+					
+					// we've already accounted for double boxing, so lets
+					// make sure we grab all of these!
+					last.consume(piece, false);
+				} else {
+					// not sure what to do here!
+					System.err.println("I don't know how to consume " + this);
+				}
+			}
+		}
 	}
-		/** Selecting a feature for opening by returning an Edge that can be used
+	
+	/** Selecting a feature for opening by returning an Edge that can be used
 	 *  to open it. 
 	 *  @param baiting True if you would like to return an edge that offers the
 	 *  oponent a chance to double box or false for you would like to prevent
@@ -158,7 +241,7 @@ public class Feature {
 	}
 	
 	/** 
-	 * @return An ArrayList of Features
+	 * @return An ArrayList of Features connected to this Feature
 	 **/
 	public ArrayList<Feature> getFeatures(){
 		if(type == Classification.INTERSECTION){
@@ -169,14 +252,18 @@ public class Feature {
 			
 			for(Edge edge : cell.getEmptyEdges()){
 				Cell other = edge.getOtherCell(cell);
+				// make sure we're not on the side of the board (shouldn't
+				// happen because we're assuming lockdown)
 				if(other != null){
 					Feature f = this.fs.unmap(other);
-					
-					// unless we're thinking of adding a loop thats already in,
-					// add this feature
-					if(f.classification() != Classification.LOOP
-							|| ! features.contains(f)){
-						features.add(f);
+					// make sure this feature still exists in the feature set
+					if(f != null){
+						// unless we're thinking of adding a loop thats already in,
+						// add this feature
+						if(f.classification() != Classification.LOOP
+								|| ! features.contains(f)){
+							features.add(f);
+						}
 					}
 				}
 			}

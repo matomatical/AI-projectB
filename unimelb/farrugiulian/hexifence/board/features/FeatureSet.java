@@ -42,12 +42,17 @@ public class FeatureSet {
 		advantage += score * ((piece == this.piece) ? 1 : -1);
 	}
 	
+	/** map between cells and features **/
 	private HashMap<Cell, Feature> map = new HashMap<Cell, Feature>();
-	
+
+	/** Map this cell to this feature for future reference **/
 	protected void map(Cell cell, Feature feature){
 		this.map.put(cell, feature);
 	}
 
+	/** Get the frature containing this cell, or null if it's not contained
+	 * in any feature
+	 **/
 	protected Feature unmap(Cell cell){
 		return this.map.get(cell);
 	}
@@ -56,7 +61,7 @@ public class FeatureSet {
 	 * @param board A <b>post-lockdown</b> board to analyse for features 
 	 * @param piece We just need one piece to know which way to store the
 	 * advantage (doesn't actually make a difference)
-	 */
+	 **/
 	public FeatureSet(Board board, int piece){
 		
 		this.piece = piece;
