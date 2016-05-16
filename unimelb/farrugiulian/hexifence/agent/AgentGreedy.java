@@ -13,7 +13,6 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 
 import com.matomatical.util.QueueHashSet;
 
@@ -30,20 +29,26 @@ import unimelb.farrugiulian.hexifence.board.Edge;
  **/
 public class AgentGreedy extends Agent{
 	
+	/** Collection of edges representing captureable cells **/
 	private QueueHashSet<Edge> free;
+	/** Collection of edges representing captureable cells **/
 	private QueueHashSet<Edge> safe;
-	private HashMap<Edge, Integer> sacr;
+	/** Collection of edges representing captureable cells **/
+	private QueueHashSet<Edge> sacr;
 	
+	/** Initialise the superclass and also the specifics for this class **/
 	@Override
 	public int init(int n, int p){
 		int r = super.init(n, p);
 	
 		List<Edge> edges = Arrays.asList(board.getEdges());
 		Collections.shuffle(edges, new Random(System.nanoTime()));
+
+		// all edges are safe on an empty board
+		safe = new QueueHashSet<Edge>(edges);
 		
 		free = new QueueHashSet<Edge>();
-		safe = new QueueHashSet<Edge>(edges);
-		sacr = new HashMap<Edge, Integer>(); // um how is this gonna work
+		sacr = new QueueHashSet<Edge>();
 		
 		return r;
 	}
@@ -68,14 +73,14 @@ public class AgentGreedy extends Agent{
 				// these edges are no longer safe!
 				for(Edge e : cell.getEmptyEdges()){
 					if(safe.remove(e)){
-						sacr.put(e, sacrificeSize(e));
+						sacr.add(e);
 					}
 				}
 			
 			} else if (n == 1){
 				// these edges are no longer sacrifices, they're free!
 				for(Edge e : cell.getEmptyEdges()){
-					if(sacr.remove(e) != null){
+					if(sacr.remove(e)){
 						free.add(e);
 					}
 				}
@@ -98,7 +103,8 @@ public class AgentGreedy extends Agent{
 			return safe.remove();
 		}
 		
-		// then and only then, select a move that will lead to a small sacrifice
+		// then and only then, select a move that will lead to the smallest
+		// available sacrifice
 	
 		Edge[] edges = board.getEmptyEdges();
 		
@@ -119,26 +125,46 @@ public class AgentGreedy extends Agent{
 		return bestEdge;
 	}
 
+	/** Helper function to calcualte the size of the sacrifice made when
+	 *  claiming an edge
+	 * @param edge the edge to claim to give this sacrifice
+	 * @return the maximum number of cells that the opponent will be able to
+	 * capture as a result
+	 */
 	private int sacrificeSize(Edge edge) {
-		int size = 0;
+		
+		// keep track of which edges we have placed
 		Stack<Edge> stack = new Stack<Edge>();
 		
+		// place the first edge
 		board.place(edge, super.opponent);
 		stack.push(edge);
 		
+		// count the consequences
+		int size = 0;
 		for(Cell cell : edge.getCells()){
 			if (cell.numEmptyEdges() != 0){
 				size += sacrifice(cell, stack);
 			}
 		}
 		
+		// unplace all of the edges that were placed to restore the baord!
 		while(!stack.isEmpty()){
 			board.unplace(stack.pop());
 		}
 		
+		// you know, at this point we could probably cleverly keep all of these
+		// edges up-to-date counts on their sacrifice size but there's no point
+		// now!
 		return size;
 	}
 
+	/** temporarily greedily claim everything made available by a sacrifice
+	 *  counting the number of claims and 
+	 * @param cell the cell to start searching from
+	 * @param stack the stack of edges placed for unwinding later
+	 * @return the number of cells claimed down this path
+	 */
 	private int sacrifice(Cell cell, Stack<Edge> stack){
 		
 		int n = cell.numEmptyEdges();

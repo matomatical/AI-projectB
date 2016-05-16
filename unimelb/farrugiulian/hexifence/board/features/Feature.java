@@ -16,14 +16,13 @@ import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Cell;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
-/**
+/** 
  * 
  * @author Matt Farrugia
  * @author Julian Tran
- *
  */
 public class Feature {
-
+	
 	public enum Classification{
 		CHAIN, ISO_LOOP, LOOP, INTERSECTION, OPEN
 	}
