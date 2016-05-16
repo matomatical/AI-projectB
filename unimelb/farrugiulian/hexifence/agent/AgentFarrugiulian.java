@@ -74,7 +74,6 @@ public class AgentFarrugiulian extends Agent {
 		}
 		
 		// parent init success!
-		
 		this.es = new EdgeSet(super.board, true);
 		
 		// return the same value as superclass
@@ -103,7 +102,6 @@ public class AgentFarrugiulian extends Agent {
 	
 	@Override
 	public Edge getChoice(){
-	
 		// no matter the game stage, capture any consequence-free cells
 		if(es.hasFreeEdges()){
 			return es.getFreeEdge();
@@ -163,19 +161,6 @@ public class AgentFarrugiulian extends Agent {
 	
 	/** Returns the move to be made by the agent in the endgame */
 	private Edge endgameMove() {
-		/*Stack<Edge> stack = new Stack<Edge>();
-		consumeAll(stack);
-		int numShortChains = numShortChains();
-		while(!stack.isEmpty()){
-			board.unplace(stack.pop());
-		}
-		System.out.print(Board.name(piece) + " has " + numShortChains + " short chains left and should ");
-		if (numShortChains % 2 == 0) {
-			System.out.println("lose");
-		} else {
-			System.out.println("win");
-		}
-		while (true) {}*/
 		// If we have edges we can capture
 		if (es.hasCapturingEdges()) {
 			// Count the maximum number of cells we can take
@@ -196,7 +181,7 @@ public class AgentFarrugiulian extends Agent {
 					board.unplace(stack.pop());
 				}
 				if (sp.piece == super.piece) {
-					System.out.println("Double boxing");
+					System.out.println(Board.name(piece) + " is double boxing");
 					// If double boxing makes us win, then double box (duh)
 					Cell[] cells = es.getCapturingEdge().getCells();
 					Cell cell;
@@ -213,7 +198,7 @@ public class AgentFarrugiulian extends Agent {
 						return cell.getEmptyEdges()[0];
 					}
 				} else {
-					System.out.println("Not double boxing");
+					System.out.println(Board.name(piece) + " is not double boxing");
 					// If double boxing does not make us win, then take the cells
 					// Sure it may not make us win either, but perhaps the opponent does
 					// not need to throw as hard to let us win if we get more score now
@@ -244,21 +229,15 @@ public class AgentFarrugiulian extends Agent {
 		SearchPair<Feature> sp = featureSearch(fs, super.piece);
 		if (sp.choice == null) {
 			fs = new FeatureSet(board, super.piece);
-			if (sp.piece == super.piece) {
-				// No more intersected sacrifices and we should win
-				// Get the smallest chain
-				sp.choice = getSmallestSacrifice(fs);
-			} else {
-				// No more intersected sacrifices and we should lose
-				// Get a chain such that the last sacrifice is not a loop
-				// (not too sure how to do this just yet so just get the smallest chain)
-				sp.choice = getSmallestSacrifice(fs);
-			}
+			sp.choice = getSmallestSacrifice(fs);
 		}
 		if (sp.piece == super.piece) {
+			System.out.println(Board.name(piece) + " is securely moving");
 			// We should win so make the sacrifice securely
+			//System.out.println(sp.choice.length());
 			return sp.choice.choose(false);
 		} else {
+			System.out.println(Board.name(piece) + " is baiting");
 			// We should lose so make a baiting sacrifice
 			return sp.choice.choose(true);
 		}
