@@ -43,6 +43,7 @@ public class EdgeSet {
 		if(shuffling){
 			// shuffle the list of edges to result in random removal order
 			long seed = System.nanoTime();
+			System.err.println("Edgeset seed:" + seed);
 			Collections.shuffle(edges, new Random(seed));			
 		}
 		

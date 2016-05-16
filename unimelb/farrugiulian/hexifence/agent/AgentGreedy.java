@@ -41,9 +41,12 @@ public class AgentGreedy extends Agent{
 	public int init(int n, int p){
 		int r = super.init(n, p);
 	
+		long seed = System.nanoTime();
 		List<Edge> edges = Arrays.asList(board.getEdges());
-		Collections.shuffle(edges, new Random(System.nanoTime()));
+		Collections.shuffle(edges, new Random(seed));
 
+		System.err.println("Greedy seed:" + seed);
+		
 		// all edges are safe on an empty board
 		safe = new QueueHashSet<Edge>(edges);
 		
