@@ -10,8 +10,7 @@ package com.matomatical.hexifence.visual;
 
 import aiproj.hexifence.Move;
 
-/** Modified Referee class which can be used as a controller for a LibGDX Game
- * 
+/** Modified Referee class which can be used as a model for a LibGDX Game
  * @author Matt Farrugia [farrugiam@student.unimelb.edu.au]
  **/
 public class VisualReferee {

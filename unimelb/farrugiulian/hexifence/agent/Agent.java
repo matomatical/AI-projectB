@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.agent;
 
 import java.io.PrintStream;
@@ -9,27 +17,38 @@ import aiproj.hexifence.*;
 import unimelb.farrugiulian.hexifence.board.Board;
 import unimelb.farrugiulian.hexifence.board.Edge;
 
+/** Abstract Agent class for fulfilling the Player interface and ensuring that
+ *  we play a legal game of hexifence (all the way down to selecting actual
+ *  moves from the board; selecting a valid (and intelligent) move is down to
+ *  Agent's subclasses)
+ *  
+ *  Allows for multple AI Agent implementations using the Template Pattern
+ *  through abstract getChoice() and update(Edge) methods which can be
+ *  overriden with specific behaviour
+ * 
+ * @author Matt Farrugia [farrugiam]
+ * @author Julian Tran   [juliant1]
+ **/
 public abstract class Agent implements VisualPlayer{
-	/** Which piece the agent uses */
+	/** Which piece the agent uses **/
 	protected int piece;
-	/** Which piece the agent's opponent uses */
+	/** Which piece the agent's opponent uses **/
 	protected int opponent;
 	
-	/** The current score of the agent */
+	/** The current score of the agent **/
 	protected int myScore = 0;
-	/** The current score of the agent's opponent */
+	/** The current score of the agent's opponent **/
 	protected int yourScore = 0;
 	
-	/** The current state of action of the agent */
+	/** The current state of action of the agent **/
 	private enum PlayerState {
 		STARTING, MOVING, WAITING, CHEATED;
 	}
 	private PlayerState state;
 	
-	/** Representation of the game board */
+	/** Representation of the game board **/
 	protected Board board;
 	
-	/** Initializes the agent */
 	@Override
 	public int init(int n, int p) {
 		
@@ -47,14 +66,18 @@ public abstract class Agent implements VisualPlayer{
 		return 0;
 	}
 	
-	/** Queries the agent for its next move */
+	/** Queries the agent for its next move
+	 * @return The next Edge to play (up to the subclass to ensure it's legal)
+	 **/
 	protected abstract Edge getChoice();
 
-	/** Notifies the agent that an edge has been placed on the board */
-	// let the agent know that a piece has been placed on the board
+	/** Notifies this agent that an edge has been placed on the board,
+	 *  by either the opponent or ourselves
+	 * @param edge The piece that was just played
+	 **/
 	protected abstract void update(Edge edge);
-	
-	/** Makes the agent's next move */
+
+	/** Select and return the best next move according to this agent **/
 	@Override
 	public Move makeMove(){
 		
@@ -89,7 +112,7 @@ public abstract class Agent implements VisualPlayer{
 	}
 	
 	/** Helper function to generate a new move from an edge and our piece
-	 * @param edge - the Edge we're generating a move for
+	 * @param edge the Edge we're generating a move for
 	 * @return a new move based on this edge
 	 **/
 	private Move newMove(Edge edge){
@@ -106,7 +129,7 @@ public abstract class Agent implements VisualPlayer{
 		return m;
 	}
 
-	/** Makes the agent's opponent's next move */
+	/** Respond to opponent move (validating and updating our state) **/
 	@Override
 	public int opponentMove(Move m) {
 
@@ -159,7 +182,7 @@ public abstract class Agent implements VisualPlayer{
 		}
 	}
 	
-	/** Checks if there is a winner */
+	/** Checks if there is a winner **/
 	@Override
 	public int getWinner() {
 		
@@ -189,13 +212,14 @@ public abstract class Agent implements VisualPlayer{
 		}
 	}
 
-	/** Prints an ASCII representation of the game board */
+	/** Prints and ASCII representation of the game board to the PrintStream
+	 **/
 	@Override
 	public void printBoard(PrintStream output) {
 		board.printTo(output);
 	}
 	
-	/** Returns a board that can be visually displayed */
+	/** Returns a board that can be visually displayed **/
 	@Override
 	public VisualBoard getBoard(){
 		return board;

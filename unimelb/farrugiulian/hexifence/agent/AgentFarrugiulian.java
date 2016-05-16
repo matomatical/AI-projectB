@@ -1,3 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *            COMP30024 Artificial Intelligence - Semester 1 2016            *
+ *                  Project B - Playing a Game of Hexifence                  *
+ *                                                                           *
+ *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
+ *                  Last Modified 16/05/16 by Matt Farrugia                  *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 package unimelb.farrugiulian.hexifence.agent;
 
 import java.util.Stack;
@@ -6,39 +14,53 @@ import aiproj.hexifence.Piece;
 import unimelb.farrugiulian.hexifence.board.*;
 import unimelb.farrugiulian.hexifence.board.features.*;
 
+/** This Agent plays the game of Hexifence in three stages:
+ *  <br>
+ *  <ul>
+ *  	<li>
+ *  		During the opening state, the agent greedily captures any available
+ *  		cells and then makes a random safe move (one that does not offer
+ *  		any cells to the oponent)
+ *  	</li>
+ *  	<li>
+ *  		When there are only MIDGAME_SEARCH_DEPTH safe edges left, the agent
+ *  		will begin to conduct an approximate adversarial search all the way
+ *  		to a terminal state, considering only safe edges until none remain,
+ *  		and then considering board features such as sacrifices, chains and
+ *  		loops. It will attemt to find a winning move within a specified
+ *  		time, and then play that move.
+ *  	</li>
+ *  	<li>
+ *  		Once the board has no more safe edges left, the agent will again
+ *  		search until a terminal state considering sacrifices and other
+ *  		features looking for a winning move, or a move that wil give the
+ *  		opponent a chance to make a mistake if there are no winning moves
+ *  		left.
+ *  	</li>
+ *  </ul>
+ **/
 public class AgentFarrugiulian extends Agent {
-	/** Enter the midgame state when the number of safe edges fall below this
-	 *  value
-	 **/
+	
+	/** Number of Safe edges that signals the beginning of the Midgame stage**/
 	private static final int MIDGAME_SEARCH_DEPTH = 19;
 	
-	/** How long to minimax search safe edges for during midgame before giving
-	 *  up (in ms)
-	 **/
+	/** Timeout (in ms) for midgame searching **/
 	private static final int MIDGAME_SEARCH_TIMEOUT = 5000;
 	
-	/** Finite state machine. During the opening state, the agent greedily
-	 *  makes scoring moves, then safe moves. During the midgame state, the
-	 *  agent greedily makes scoring moves, then does a approximate adversarial
-	 *  search for the best safe move. During the endgame state, the agent
-	 *  greedily makes scoring moves that have no consequences, then plays out
-	 *  the game heuristically using an adversarial search for the best way to
-	 *  break up intersections between chains and loops.
-	 **/
+	/** Enum to keep track of game stage **/
 	private enum GameStage{
 		OPENING, MIDGAME, ENDGAME;
 	}
-	
-	/** State variable, initially in the opening state */
+	/** Begin in opening stage **/
 	private GameStage stage = GameStage.OPENING;
 	
-	/** Classification of the empty edges on the board */
+	/** Collection of empty edges on the current board **/
 	private EdgeSet es;
 	
-	/** For timing the midgame searches */
+	/** For timing the midgame searches **/
 	private long clock;
 	
-	/** Initializes the agent */
+	/** Initialize the agent **/
 	@Override
 	public int init(int n, int p){
 		if(super.init(n, p) != 0){
@@ -54,7 +76,6 @@ public class AgentFarrugiulian extends Agent {
 		return 0;
 	}
 	
-	/** Notifies the agent that an edge has been placed on the board */
 	@Override
 	protected void update(Edge edge) {
 		// maintain the edge set
@@ -66,15 +87,15 @@ public class AgentFarrugiulian extends Agent {
 				System.err.println("Entering midgame");
 				this.stage = GameStage.MIDGAME;
 			}
+			
 		} else if (this.stage == GameStage.MIDGAME){
 			if( ! this.es.hasSafeEdges()){
 				System.err.println("Entering endgame");
 				this.stage = GameStage.ENDGAME;
 			}
-		}
+		} 
 	}
 	
-	/** Queries the agent for its next move */
 	@Override
 	public Edge getChoice(){
 	
@@ -97,7 +118,7 @@ public class AgentFarrugiulian extends Agent {
 		}
 	}
 	
-	/** Returns the move to be made by the agent in the opening state */
+	/** Returns the move to be made by the agent in the opening stages */
 	public Edge openingMove(){
 		
 		// select any captureable edges, if they exist
@@ -118,7 +139,7 @@ public class AgentFarrugiulian extends Agent {
 		return null;
 	}
 	
-	/** Returns the move to be made by the agent in the midgame state */
+	/** Returns the move to be made by the agent in the midgame stages */
 	private Edge midgameMove() {
 		
 		// select any captureable edges, if they exist
@@ -135,7 +156,7 @@ public class AgentFarrugiulian extends Agent {
 		return sp.choice;
 	}
 	
-	/** Returns the move to be made by the agent in the endgame state */
+	/** Returns the move to be made by the agent in the endgame */
 	private Edge endgameMove() {
 		Stack<Edge> stack = new Stack<Edge>();
 		consumeAll(stack);
@@ -235,10 +256,13 @@ public class AgentFarrugiulian extends Agent {
 		}*/
 	}
 	
-	/** Performs a minimax search on the safe edges on the board until there are
-	 * none left
-	 * @param piece
-	 * @return
+	/** Performs a minimax search on the safe edges on the board until there
+	 *  are none left!
+	 * @param piece Find a move given this this piece is to play next
+	 * @return SearchPair of an edge and the winning player assuming optimal
+	 * play according to our search functions (which are not actually optimal
+	 * as they are not considering all possible or equivalently possible moves,
+	 * for example we do not consider sacrificing while safe edges remain)
 	 **/
 	private SearchPair<Edge> safeEdgeSearch(int piece) {
 		
