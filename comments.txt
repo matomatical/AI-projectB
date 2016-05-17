@@ -67,9 +67,9 @@ Structure of Solution
     - unimelb.farrugiulian.hexifence.board.boardreading
         Some leftover classes adapted from Project Part A: for reading and building boards based on specially-formatted ASCII input
 
-    In addition to these classes, as we have mentioned we also created a Visualisation engine using LibGDX, however
+    In addition to these classes, as we have mentioned we also created a Visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files that can be viewed
 
-Discussion of our Agent
+AgentFarrugiulian
 	
 	Our agent divides each game up into three parts - the opening, the midgame, and the endgame. After every move is made, the agent checks if it should change its strategy. This transition check is done based on the number of "safe" edges left, or, the number of edges left that can be placed without allowing a player to score. The agent switches from its opening strategy to its midgame strategy once there are less than 30 safe edges left, and from its midgame strategy to its endgame strategy once there are no safe edges left.
 	
