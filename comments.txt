@@ -8,15 +8,6 @@
  *                  Last Modified 17/05/16 by Matt Farrugia                  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-Marks:
-
-    4 - quality of code and comments
-    4 - correctness and reliability
-    7 - results of testing
-    7 - creativity of solution
-	
-Introduction
-
     Welcome to our submission. Here you will find a series of Java classes built for playing the best game of Hexifence you have seen in your life! Our solution is broken into a number of packages, and an even larger number of classes (spanning over 4000 lines of code in total! In this comments.txt file, we'll briefly discuss the structure of those packages and classes, before diving into a report on our Agent's winning game strategy.
 
     We've managed to develop an Agent that can, in a reasonable time and without using much memory, search all the way to a terminal state from near the beginning of a dimension 2 game. Obviously we're not enumerating all possibilities in this search; we've used a host of domain-specific heuristics and approximations to lower our branching factor. As a result, there are several limitations to our Agent's strategy, which we have documented as well. However, I think we can proudly declare that this Agent's Intelligence is a product of our own, truly representing our mastery of the game (though with a much faster clock speed!)
@@ -24,7 +15,6 @@ Introduction
     In addition to employing clever heuristics, our Agent employs two purpose-built data structures on top of its board representation, for improving time complexity where it counts. We've also been able to pursue the design of this agent with more clarity than most, by leveraging LibGDX (a Java Game Development Library) to render Hexifence Boards in colourful 2D -- so we can watch our Agent dominate opponents without straining to interpret ASCII symbols on the command line. We've included some sample .jar files so that you can see this for yourself, and written more about it later in this report.
 
     We hope you can take the time to enjoy reading about the fun we have had with this project.
-
                                                                 Julian and Matt
 
 Structure of Solution
@@ -70,6 +60,10 @@ Structure of Solution
 
 AgentFarrugiulian
 	
+    Our Agent divides each game up into three stages - the opening stage, the mid-game stage, and the endgame stage. We will outline the approaches used in each stage below.
+
+
+    Broadly speaking, the opening consists of random play, and a transition is made to the mid-game stage as soon as the branching factor is low enough for our search to complete in a reasonable amount of time.
 	Our agent divides each game up into three parts - the opening, the mid-game, and the endgame. After every move is made, the agent checks if it should change its strategy. This transition check is done based on the number of "safe" edges left, or, the number of edges left that can be placed without allowing a player to score. The agent switches from its opening strategy to its mid-game strategy once there are less than 30 safe edges left, and from its mid-game strategy to its endgame strategy once there are no safe edges left.
 
 	Our opening strategy is to first make any move that increases our score. If there is no such move, then we make a random safe move. We are not using a search at this point because we believe that there is limited benefit in doing so, as the search would have to be quite shallow due to the high branching factor, and we would have to construct a utility function which was capable of meaningfully evaluating boards at very early stages of the game.
@@ -87,7 +81,8 @@ AgentFarrugiulian
 
 Our Agent's Data Structures
 
-    
+    Our Agent Makes use of two highly specialised data structures on top of its internal, underlying representation of the current state of the board. The first of these is used by the opening and mid-game algorithms, and the second by the endgame AI and by the mid-game (as part of board evaluation)
+
     - Data Structures
         - EdgeSet making initial decisions take constant time to save on time
         - FeatureSet massively reduces branching factor by collecting equivalent moves towards the end of the game
