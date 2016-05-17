@@ -222,7 +222,7 @@ public class AgentFarrugiulian extends Agent {
     // We do not have edges we can capture, so we need to make a sacrifice
     FeatureSet fs = new FeatureSet(board, super.piece);
     SearchPair<Feature> sp = featureSearch(fs, super.piece);
-    if (sp.choice == null) {
+    if (sp.choice == null || sp.piece != super.piece) {
       fs = new FeatureSet(board, super.piece);
       sp.choice = getSmallestSacrifice(fs);
     }
