@@ -328,7 +328,8 @@ public class AgentFarrugiulian extends Agent {
       pair.choice = getIntersectedSacrifices(features).get(i);
       if (pair.piece == piece) {
         return pair; // found a winning move for this player!
-      } else {
+      } else if (result == null
+          || pair.choice.length() < result.choice.length()) {
         // this move is not a winner, continue the searching!
         result = pair;
       }
