@@ -64,11 +64,11 @@ AgentFarrugiulian
 
 Opening Strategy
 
-    In the opening stages of the game, our agent plays a random safe move.
+    In the opening stages of the game, our agent plays a random, safe move (unless there are cells available for capture)
 
     As simple as it sounds, a deal of effort went into making these turns happen as quickly as possible. It turns out creating a collection capable of supporting constant time access and removal of specific edges, and also constant time removal of a random edge, is not such a simple task.
 
-    The EdgeSet Data Structure
+The EdgeSet Data Structure
 
     Our Agent achieves constant-time random moves by maintaining the first of our specialised data structures - the EdgeSet. This data structure is also used by the mid-game search algorithm, and the effects are more noticeable there, where this complexity improvement is magnified by the exponential nature of a search. Moreover, having a data structure supporting fast, randomised but heuristic decision-making is a crucial part of an effective 'play-out' based strategy, such as a Monte-Carlo tree search, or the strategy we ended up arriving at for our final agent.
 
@@ -77,57 +77,67 @@ Opening Strategy
         - capturing edges (capturing a cell and making another capture-able)
         - safe edges (don't make another cell capture-able)
         - sacrificing edges ()
+    When a move is played, the EdgeSet is updated and kept accurate, considering the consequences to all nearby Edges.
 
-    (actually, they are specialised QueueHashSet collections, a purpose-built extension of the standard Java library's LinkedHashSet that supports constant-time FIFO removal). By shuffling the Board's edges as they are inserted into these FIFO structures, we achieve effectively random access order, while still maintaining the ability to access a particular edge in any of the collections in constant time (through hashing, with Edge's robust hashCode() method).
+    It's therefore important that we use a collection type that supports fast insertion and removal of specific elements. HashSets come to mind. However, our collections would be useless for our purposes if they did not support fast removal of elements for selection. We need to be able to pull SOMETHING out of the safe set, for example, when we are looking for a safe move to actually play. HashSets, unfortunately, only support linear time removal in this manner.
 
-    Broadly speaking, the opening consists of random play, and a transition is made to the mid-game stage as soon as the branching factor is low enough for our search to complete in a reasonable amount of time.
-	Our agent divides each game up into three parts - the opening, the mid-game, and the endgame. After every move is made, the agent checks if it should change its strategy. This transition check is done based on the number of "safe" edges left, or, the number of edges left that can be placed without allowing a player to score. The agent switches from its opening strategy to its mid-game strategy once there are less than 30 safe edges left, and from its mid-game strategy to its endgame strategy once there are no safe edges left.
+    That's where the specialised utility class comes in. The QueueHashSet is an extension of Java's native LinkedHashSet, which allows fast FIFO removal of elements by maintaining a linked list atop the hash table structure. Our QueueHashSet extends this to implement the Queue interface, providing convenient methods for extracting an item as per our requirements. So with it, we have the ability to insert, update, delete and get an element, all in O(1) time! Awesome!
 
-	Our opening strategy is to first make any move that increases our score. If there is no such move, then we make a random safe move. We are not using a search at this point because we believe that there is limited benefit in doing so, as the search would have to be quite shallow due to the high branching factor, and we would have to construct a utility function which was capable of meaningfully evaluating boards at very early stages of the game.
+    One further detail that helps speed up our game playing is the fact that the EdgeSet supports the UN-making of moves. By keeping itself up to date in both the forward and the backward directions, we are able to conduct searches on a single underlying board (by restoring it to its original position as we unwind the recursive search algorithms), saving us from having to copy the board to generate new states - search transitions can happen in constant time!
 
-	Our mid-game strategy is to first make any move that increases our score. If there is no such move, then we do an approximate minimax search (with pruning) for the best safe move to make. Our search space is over all safe edges, as we could not find a situation where making an unsafe move would be beneficial, and are assuming that if such a situation exists, it would be rare enough to warrant trading a more complete search for a faster search. We consider any board state which has no safe edges to be a terminal state, and evaluate this state using a smaller minimax search on features (the chains, loops, and intersections that appear) followed by a heuristic play-out. This evaluation determines which players will win or lose from this board state, with no grey area in between. This has the benefit of effectively implementing a fast alpha-beta pruning, because as soon as a player in the search expands a move which has a valuation where that player is expected to win, then that player can return that valuation immediately without expanding any further moves. This however relies on our evaluation function being correct, as an incorrect valuation can easily be returned all the way back up the search tree with this method.
+Mid-game Strategy
 
-	Our endgame strategy is to first make any move that both increases our score and does not create another move that can increase our score. This new condition stems from strategy seen in the more common "dots and boxes" game, where in the endgame, it is not optimal to greedily increase your score. Instead, optimal play involves "staying in control", where you force your opponent to open or "sacrifice" long chains of boxes, at which point you take all but two (or sometimes four) of the boxes, and "double box" the other two of the boxes, which forces the opponent, who is not in control, to take those few boxes, and sacrifice another long chain of boxes. Therefore, the only time we can be trivially sure that capturing a cell is a smart move, is when we know that capturing the cell does not make another cell capture-able.
+    We wouldn't get very far with an agent that makes random moves. Our aim during opening is actually to transition to the mid-game stage as early as possible, such that our mid-game search algorithm will not take too long. We achieved this by testing various transition thresholds and finding that when about 30 safe edges remain, our search completes in a number of seconds. If this turns out to be too early, time-outs will ensure that we default back to effectively random safe behaviour before a rouge search takes too much of our playtime.
+
+    Our approach to searching from this point is an approximate minimax search with a highly simplified, but more effective variation of alpha-beta pruning based on accurately determining the winning player from states with no remaining safe edges.
+
+    Our search is 'approximate', as it does not actually consider ALL possible moves from each search state. While there are still safe edges remaining, it considers only these safe edges as valid moves. It's unfortunately possible, however, that the only winning move requires making an early sacrifice of a few cells, achieved by taking an edge that is NOT a safe edge. Our search ignores these moves from both players' perspectives, and this means that our Agent is blind to unsafe, winning moves. If they happen to exist in a particular game, another Agent could defeat us even if we thought we were going to win. However, these situations seem to be difficult to imagine and rare to encounter, meaning that the time taken to consider them at every layer of our search may not be worth the branching-factor blow-out!
+
+    Our Agent manages to complete searches beginning with between 20 and 30 safe edges within a few seconds (with the time depending on the distribution of the edges, depending on how many safe edges are eliminated by the placing of other edges in the search). A branching factor of 30 may seem unrealistically high, however in each ply the number of remaining safe moves is reduced by a number larger than 1, as most safe moves involve the reclassification of about two other moves as now unsafe. Therefore, the number of nodes in the search tree is not 30!, but closer to 30*27*24*21*...*3 (a triple factorial: https://en.wikipedia.org/wiki/Factorial#Double_factorial). Another result is that since the Agent's next turn is likely to start with a board with two safe edges having been played and therefore about 6 less safe edges, subsequent searches will have search trees of rapidly decreasing size!
+
+    We have also included a simplified version of alpha-beta pruning in our mid-game search. This relies on us being able to accurately evaluate boards with no safe edges and determine the winning player. Since our resulting evaluation function has a domain of only two possible values, we're able to prune more aggressively; at each layer of the search tree, once we find a move that results in the player at that layer winning the game, we can safely return this as an optimal move without ever needing to evaluate any other options from this state.
+
+    Our evaluation of boards with no safe edges is actually not a static evaluation, but a fast 'play-out' search from that board all the way to a real terminal state, using the same search strategy as our Agent uses during endgame. Using the second of our specialised data structures (discussed below), this search can be conducted with an incredibly low branching factor, despite the fact that there are likely to be a large number of legal moves remaining. This play-out is close to linear time in the size of the board in practice. We can therefore quickly and accurately determine the expected winner from one of these states, as if we were using a static evaluation function, and drive the play towards these winning states.
+
+The FeatureSet Data Structure
+
+    When there are no 'safe' moves remaining, it's useful to stop viewing the board as a set of legal edges, and begin to view it as a set of higher-order features; 'chains' and 'loops'. These are groups of cells that are bordered by collections of edges, and choosing any one of the edges results in all of the cells becoming available for capture one after the other.
+
+    At this point, when edges can be naturally grouped into sets of effectively equivalent moves, a search over edges becomes pretty much useless due to its unnecessarily high branching factor. It's much better to partition the edges into their equivalence classes and search based on these.
+
+    This is where the FeatureSet comes in. A FeatureSet is a collection of these board features (chains, loops, and the 'intersection' cells where they connect to one another). Using a linear time algorithm reminiscent of Depth-First Search, we can take a board and scan it for these Features. Then, we can conduct a search by Cloning the FeatureSet and making changes to it, all the while keeping track of the score on the board, before eventually reaching a terminal state and inspecting this score to determine who the winner was.
+
+    Using the FeatureSet like this to dramatically reduce the branching factor in the late stages of the game is the secret to our fast and accurate mid-game evaluations. It's also the backbone of our endgame strategy, which we'll talk more about soon. However, it has more potential than in just these applications!
+
+    Firstly, having a way to carefully analyse the board for these features is a fantastic first step to constructing a powerful static evaluation function; where the existing features could be carefully analysed to determine a utility value for a given non-terminal state. We basically decided not to go down this route since any powerful utility function would need to take into account the very complex interactions features and their counts as they play into the flow of control at the late stages of the game, for example one important feature can be the parity of the number of small sacrifices on the board as it determines the player that will be forced to open the first long chain of cells, likely losing the game if there are enough of these long features to overcome the cost of the sacrifices beforehand.
+
+    Secondly, though not attempted for this project, a FeatureSet could be extended to keep track of a board's features before there are no safe edges remaining, in some sense 'merging' it with our EdgeSet to provide a richer analysis of the current state of the board. Though incredibly complex to implement (especially the requirement to keep it up to date with the placing and removal of edges throughout the whole game) would make a more complete mid-game and endgame search far more feasible.
+
+Endgame Strategy
+
+	Our endgame strategy is to first make any move that both increases our score and does not create another move that can increase our score. This new condition stems from strategy seen in the more common "dots and boxes" game, where in the endgame, it is not optimal to greedily increase your score. Instead, optimal play involves "staying in control", where you force your opponent to open or "sacrifice" long chains of boxes, at which point you take all but two of the boxes, and "double box" the other two of the boxes. This forces the opponent, to take those two boxes, and sacrifice another long chain of boxes. Therefore, the only time we can be trivially sure that capturing a cell is a smart move, is when we know that capturing the cell does not make another cell capture-able.
+
 	If there are no moves that allow for this, we can still maybe capture cells without thinking too much if we are not in a position to double box. So if we are still able to capture cells, we calculate how many cells we can capture before allowing the opponent to make their move. If this number is two, then we know we are in a position where we might want to double box, as if these two cells were capture-able with the same move, then we would have made this move before doing this check. Likewise, if this number is four and one of the moves we would make in capturing these four cells would capture two cells at once, then we are also in a position where we might want to double box.
+
 	Therefore, if we know we are in a position where we definitely do not want to double box, i.e. not in one of the aforementioned positions, then we can safely make moves that increase our score without needing to consider how the game will turn out. We only need to make sure that the edge we take does not remove the possibility that we are able to double box later on (Though the only time we should encounter this situation is when the opponent makes a very bad move).
+
 	If we are in a position to double box, we need to determine whether it is actually a good idea to do so. We create a board state where it is as if we chose to double box (so the opponent has captured the cells we gave up and it is now their turn to move again), and then use our minimax search on features followed by a heuristic play-out to play out the game from here, and check if we should be guaranteed the win. If so, then obviously double boxing is the right choice (though this results in our agent sometimes being quite disrespectful by double boxing as its very last move, effectively giving the opponent some score because our agent does not need it), and if not then we choose to just increase our own score.
-	If there are no moves that increase our score, then we need to make a move that will allow the opponent to increase their score (making a sacrifice). Again, we use a minimax search on features followed by a heuristic playout to determine if we can be guaranteed a win from here. If so, then we make the sacrifice returned by the feature search, and if not we make the smallest sacrifice possible. How we make this sacrifice is important if we are making a sacrifice of two cells. If we are "in control" of the game, then we do not want to allow the opponent to double box our sacrifice, and take away our control, so we sacrifice the chain securely in the middle. If we are not in control, we sacrifice the chain on the edge, hoping that the opponent is not smart and double boxes it, so that we may later take control, or at the very least increase our score a little.
+	If there are no moves that increase our score, then we need to make a move that will allow the opponent to increase their score (making a sacrifice). Again, we use a minimax search on features followed by a heuristic play-out to determine if we can be guaranteed a win from here. If so, then we make the sacrifice returned by the feature search, and if not we make the smallest sacrifice possible. How we make this sacrifice is important if we are making a sacrifice of two cells. If we are "in control" of the game, then we do not want to allow the opponent to double box our sacrifice, and take away our control, so we sacrifice the chain securely in the middle. If we are not in control, we sacrifice the chain on the edge, hoping that the opponent is not smart and double boxes it, so that we may later take control, or at the very least increase our score a little.
 
-	The minimax search over features which has been mentioned a few times, is our way of removing a lot of the branching factor in late game. Early on we recognised that in the late game, most of the decision making comes down to gaining an odd number of short chains at the beginning of your turn, so that the opponent will be forced to open the first long chain. Therefore, a minimax search over features is done in order to determine the best way to break up forks which are connected by small chains (there are typically few of these, usually at most three or four). From here, instead of continuing to use a search to play out the game, we just assume a branching factor of one, and play out the game heuristically. We assume that all players will open sacrifices securely, and will always double if given the chance, and then we take note of the expected winner. This allows us to evaluate game quickly, while hopefully still being accurate.
-
-
-Our Agent's Data Structures
-
-    Our Agent Makes use of two highly specialised data structures on top of its internal, underlying representation of the current state of the board. The first of these is used by the opening and mid-game algorithms, and the second by the endgame AI and by the mid-game (as part of board evaluation)
-
-    - Data Structures
-        - EdgeSet making initial decisions take constant time to save on time
-        - FeatureSet massively reduces branching factor by collecting equivalent moves towards the end of the game
-
-Our Other Agents
-
-    - AgentMe
-    - AgentRandom
-	- AgentGreedy
-	AgentGreedy is an agent that will always make scoring moves when possible. If not possible, then it will make a safe move, and if this is also not possible, it will make a move that allows the opponent to gain the least amount of score. This agent was the first informed agent that we created, and making it helped us understand the sorts of features that appeared in the endgame, and got us writing functions to help quanify these features.
-
-	- DoubleAgent
-	DoubleAgent is an extension of the greedy agent, where it assumes a branching factor of one once it reaches the endgame, and plays out the game heuristically (and by it I really mean me, as I did not thinking there was actually branching happenning until Matt brought me back down to earth). It will always take edges that both score and do not create other edges that score. Failing that, it will take safe edges. And failing that, it will play out the endgame, double boxing and baiting wherever necessary in order to have an odd number of short chains at the beginning of its turn. From this agent, a lot of the endgame logic was copied to AgentFarrugiulian, but using the new FeatureSet in order to make a lot of the code more bearable.
+	The minimax search over features which has been mentioned a few times, is our way of removing a lot of the branching factor in late game. Early on we recognised that in the late game, most of the decision making comes down to gaining an odd number of short chains at the beginning of your turn, so that the opponent will be forced to open the first long chain. Therefore, a minimax search over features is done in order to determine the best way to break up forks which are connected by small chains (there are typically few of these, usually at most three or four). From here, instead of continuing to use a search to play out the game, we just assume a branching factor of one, and play out the game heuristically. We assume that all players will open sacrifices securely, and will always double if given the chance, and then we take note of the expected winner. This allows us to evaluate game quickly, while still being accurate.
 
 Other Creative Aspects: The Hexifence Visualisation Engine
 
-    In addition to the classes that make up our submission, as we have mentioned we also created a visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files so that you can view the results. See the `visual/` directory of our submission!
-
-    More details on that, instructions, etc
+    In addition to the classes that make up our submission, as we have mentioned we also created a visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files so that you can view the results. Time delays have been included between moves so that the games are easier to follow. See the `visual/` directory of our submission, and have fun watching our agents play off on boards of various dimensions!
     
 Other Creative Aspects: Possible Extensions and Research and stuff
 
-    - Monte Carlo and Nims and stuff like that
-    
-    - Endgame Search more and stuff like that
+    - Monte Carlo - seems to be well suited for this style of game, MC for example has performed well in the similar game of GO - a high-branching factor, impartial, stage-based and control-based game
 
-    - Merging the featureset and the edgeset for a more comprehensive search
-    
+    - Nims and Spage-Grundy theory
+
+    - Directions for machine learning - basically a linear evaluation function just isn't gonna cut it for this game
+
     - Transposition table and Lexicographic Pruning (even though the latter of which turns out to be a dud!)
 
 Fun times:
