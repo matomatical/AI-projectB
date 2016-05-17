@@ -25,11 +25,14 @@ Introduction
 
     We hope you can take the time to enjoy reading about the fun we have had with this project.
 
-                                            Julain and Matt
+                                                                Julain and Matt
 
 Structure of Solution
 
-    
+    Our solution became a bit expansive as we extended our simple agents and board representation into its final form. It's made up of 8 packages;
+
+    - aiproj.hexifence
+        The provided Referee class, Player interface, etc
 
 Discussion of our Agent
 	
