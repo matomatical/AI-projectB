@@ -67,8 +67,6 @@ Structure of Solution
     - unimelb.farrugiulian.hexifence.board.boardreading
         Some leftover classes adapted from Project Part A: for reading and building boards based on specially-formatted ASCII input
 
-    In addition to these classes, as we have mentioned we also created a Visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files that can be viewed
-
 AgentFarrugiulian
 	
 	Our agent divides each game up into three parts - the opening, the midgame, and the endgame. After every move is made, the agent checks if it should change its strategy. This transition check is done based on the number of "safe" edges left, or, the number of edges left that can be placed without allowing a player to score. The agent switches from its opening strategy to its midgame strategy once there are less than 30 safe edges left, and from its midgame strategy to its endgame strategy once there are no safe edges left.
@@ -89,6 +87,7 @@ AgentFarrugiulian
 
 Our Agent's Data Structures
 
+    
     - Data Structures
         - EdgeSet making initial decisions take constant time to save on time
         - FeatureSet massively reduces branching factor by collecting equivalent moves towards the end of the game
@@ -104,13 +103,17 @@ Our Other Agents
 
 Other Creative Aspects: The Hexifence Visualisation Engine
 
-    - Using LibGDX to render the board, also using a specialised Referee and specialised interfaces for Players and Boards so that I guess anyone could plug their solution into the visualiser
+    In addition to the classes that make up our submission, as we have mentioned we also created a visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files so that you can view the results. See the `visual/` directory of our submission!
+
+    More details on that, instructions, etc
     
 Other Creative Aspects: Possible Extensions and Research and stuff
 
     - Monte Carlo and Nims and stuff like that
     
     - Endgame Search more and stuff like that
+
+    - Merging the featureset and the edgeset for a more comprehensive search
     
     - Transposition table and Lexicographic Pruning (even though the latter of which turns out to be a dud!)
 
