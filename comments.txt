@@ -62,6 +62,23 @@ AgentFarrugiulian
 	
     Our Agent divides each game up into three stages - the opening stage, the mid-game stage, and the endgame stage. We will outline the approaches used in each stage below.
 
+Opening Strategy
+
+    In the opening stages of the game, our agent plays a random safe move.
+
+    As simple as it sounds, a deal of effort went into making these turns happen as quickly as possible. It turns out creating a collection capable of supporting constant time access and removal of specific edges, and also constant time removal of a random edge, is not such a simple task.
+
+    The EdgeSet Data Structure
+
+    Our Agent achieves constant-time random moves by maintaining the first of our specialised data structures - the EdgeSet. This data structure is also used by the mid-game search algorithm, and the effects are more noticeable there, where this complexity improvement is magnified by the exponential nature of a search. Moreover, having a data structure supporting fast, randomised but heuristic decision-making is a crucial part of an effective 'play-out' based strategy, such as a Monte-Carlo tree search, or the strategy we ended up arriving at for our final agent.
+
+    The data structure works by maintaining four fast-access collections of empty (legal) Edges. The collections are:
+        - free edges (capturing a cell)
+        - capturing edges (capturing a cell and making another capture-able)
+        - safe edges (don't make another cell capture-able)
+        - sacrificing edges ()
+
+    (actually, they are specialised QueueHashSet collections, a purpose-built extension of the standard Java library's LinkedHashSet that supports constant-time FIFO removal). By shuffling the Board's edges as they are inserted into these FIFO structures, we achieve effectively random access order, while still maintaining the ability to access a particular edge in any of the collections in constant time (through hashing, with Edge's robust hashCode() method).
 
     Broadly speaking, the opening consists of random play, and a transition is made to the mid-game stage as soon as the branching factor is low enough for our search to complete in a reasonable amount of time.
 	Our agent divides each game up into three parts - the opening, the mid-game, and the endgame. After every move is made, the agent checks if it should change its strategy. This transition check is done based on the number of "safe" edges left, or, the number of edges left that can be placed without allowing a player to score. The agent switches from its opening strategy to its mid-game strategy once there are less than 30 safe edges left, and from its mid-game strategy to its endgame strategy once there are no safe edges left.
