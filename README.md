@@ -137,10 +137,10 @@ arriving at for our final agent.
 
 The data structure works by maintaining four fast-access collections of empty (
 legal) Edges. The collections are:
-    - free edges (capturing a cell)
-    - capturing edges (capturing a cell and making another capture-able)
-    - safe edges (don't make another cell capture-able)
-    - sacrificing edges (make another cell capture-able)
+    * free edges (capturing a cell)
+    * capturing edges (capturing a cell and making another capture-able)
+    * safe edges (don't make another cell capture-able)
+    * sacrificing edges (make another cell capture-able)
 When a move is played, the EdgeSet is updated and kept accurate, considering 
 the consequences to all nearby Edges.
 
@@ -381,9 +381,7 @@ of various dimensions!
                     watch our agent (blue) play against itself (red) on a 
                     dimension 3 board
     
-OR
-
-    Double click <jarname>.jar in a file explorer
+Or, if you still use a GUI, double click `<jarname>.jar` in a file explorer
 
 Each time the jars are run, the agents are seeded with the System nanotime.
 This means you can get unlimited fun, watching them over and over again!
