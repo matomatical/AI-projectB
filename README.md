@@ -7,7 +7,7 @@
 Welcome to our submission. Here you will find a series of Java classes built
 for playing the best game of Hexifence you have seen in your life! Our
 solution is broken into a number of packages, and an even larger number of
-classes (spanning over 4000 lines of code in total! In this comments.txt file,
+classes, spanning over 4000 lines of code in total! In this comments.txt file,
 we'll briefly discuss the structure of those packages and classes, before
 diving into a report on our Agent's winning game strategy.
 
