@@ -41,69 +41,69 @@ Our solution became a bit expansive as we extended our simple agents and board
 representation into its final form. It's made up of 8 packages; listed here in
 rough order of relevance;
 
-    - unimelb.farrugiulian.hexifence.agent
-        Here are our game-playing Agents:
-        - Agent
-            A superclass of all Hexifence Agents, legally playing a game 
-            according to the Player interface, but delegating all 
-            decision-making to its subclass' 'getChoice()' method. Made to 
-            save on code duplication between Agents.
-        - AgentFarrugiulian
-            Our final Agent submission, more about its strategy later...
-        - AgentGreedy
-            An experimental AI playing the game with a greedy strategy - 
-            making moves that capture cells if possible, otherwise minimising 
-            the immediate gain of the opponent
-        - AgentMe
-            An experimental AI that forwards all of its decisions to a human 
-            player by reading instructions from stdin
-        - AgentRandom
-            An experimental AI that selects random legal moves
-        - DoubleAgent
-            An experimental AI that plays the game with no searching, just 
-            using a handful of hard-coded strategies to choose the best 
-            visible move based on the information available
+* unimelb.farrugiulian.hexifence.agent
+    Here are our game-playing Agents:
+    * Agent
+        A superclass of all Hexifence Agents, legally playing a game 
+        according to the Player interface, but delegating all 
+        decision-making to its subclass' 'getChoice()' method. Made to 
+        save on code duplication between Agents.
+    * AgentFarrugiulian
+        Our final Agent submission, more about its strategy later...
+    * AgentGreedy
+        An experimental AI playing the game with a greedy strategy - 
+        making moves that capture cells if possible, otherwise minimising 
+        the immediate gain of the opponent
+    * AgentMe
+        An experimental AI that forwards all of its decisions to a human 
+        player by reading instructions from stdin
+    * AgentRandom
+        An experimental AI that selects random legal moves
+    * DoubleAgent
+        An experimental AI that plays the game with no searching, just 
+        using a handful of hard-coded strategies to choose the best 
+        visible move based on the information available
 
-    Our experimental Agents ended up helping us to build our final Agent, 
-    AgentFarrugiulian.
+Our experimental Agents ended up helping us to build our final Agent, 
+AgentFarrugiulian.
 
-    - unimelb.farrugiulian.hexifence.board
-        This package contains our data structure implementing the game board, 
-        made to abstract away logic related to navigating the game grid (
-        instead considering it a collection of cells surrounded by edges, in a 
-        more graph-like manner). See the javadoc for more information on these 
-        classes and their provided functionality.
+* unimelb.farrugiulian.hexifence.board
+    This package contains our data structure implementing the game board, 
+    made to abstract away logic related to navigating the game grid (
+    instead considering it a collection of cells surrounded by edges, in a 
+    more graph-like manner). See the javadoc for more information on these 
+    classes and their provided functionality.
 
-    - unimelb.farrugiulian.hexifence.board.features
-        This class provides another layer of abstraction above the game board, 
-        allowing it to be viewed by the Agent as either a collection of 
-        available Edges with certain classifications (based on the immediate 
-        consequences of choosing those edges) and as a collection of 
-        'Features', collections of edges that represent 'chains' or 'loops' of 
-        one or more neighbouring cells that can all be captured if one of them 
-        is captured; and 'intersections' where these features meet. We'll talk 
-        more about these data structures later, too.
+* unimelb.farrugiulian.hexifence.board.features
+    This class provides another layer of abstraction above the game board, 
+    allowing it to be viewed by the Agent as either a collection of 
+    available Edges with certain classifications (based on the immediate 
+    consequences of choosing those edges) and as a collection of 
+    'Features', collections of edges that represent 'chains' or 'loops' of 
+    one or more neighbouring cells that can all be captured if one of them 
+    is captured; and 'intersections' where these features meet. We'll talk 
+    more about these data structures later, too.
 
-    - com.matomatical.hexifence.visual
-        Specialised Referee and Interfaces for interacting with the Hexifence 
-        Visualiser (that we built using LibGDX)
+* com.matomatical.hexifence.visual
+    Specialised Referee and Interfaces for interacting with the Hexifence 
+    Visualiser (that we built using LibGDX)
 
-    - com.matomatical.util
-        For extensions of standard Java utility classes, namely the 
-        QueueHashSet extension of Java's LinkedHashSet (more about data 
-        structures later)
+* com.matomatical.util
+    For extensions of standard Java utility classes, namely the 
+    QueueHashSet extension of Java's LinkedHashSet (more about data 
+    structures later)
 
-    - aiproj.hexifence
-        Provided Referee class, Player interface, etc, unchanged since copied 
-        over from dimefox on 16/05/16.
-    
-    - aiproj.hexifence.matt
-        Our own implementation of a Hexifence Referee, for experimental 
-        purposes.
-    
-    - unimelb.farrugiulian.hexifence.board.boardreading
-        Some leftover classes adapted from Project Part A: for reading and 
-        building boards based on specially-formatted ASCII input
+* aiproj.hexifence
+    Provided Referee class, Player interface, etc, unchanged since copied 
+    over from dimefox on 16/05/16.
+
+* aiproj.hexifence.matt
+    Our own implementation of a Hexifence Referee, for experimental 
+    purposes.
+
+* unimelb.farrugiulian.hexifence.board.boardreading
+    Some leftover classes adapted from Project Part A: for reading and 
+    building boards based on specially-formatted ASCII input
 
 AgentFarrugiulian
 =================
