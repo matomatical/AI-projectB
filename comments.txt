@@ -5,7 +5,7 @@
  *                               Comments.txt                                *
  *                                                                           *
  *    Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>    *
- *                  Last Modified 17/05/16 by Matt Farrugia                  *
+ *                  Last Modified 18/05/16 by Matt Farrugia                  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     Welcome to our submission. Here you will find a series of Java classes built for playing the best game of Hexifence you have seen in your life! Our solution is broken into a number of packages, and an even larger number of classes (spanning over 4000 lines of code in total! In this comments.txt file, we'll briefly discuss the structure of those packages and classes, before diving into a report on our Agent's winning game strategy.
@@ -137,10 +137,22 @@ Endgame Strategy
 Other Creative Aspects: The Hexifence Visualisation Engine
 
     In addition to the classes that make up our submission, as we have mentioned we also created a visualisation engine using LibGDX. We have not included the source code for this visualisation engine, but have packaged a few standalone .jar files so that you can view the results. Time delays have been included between moves so that the games are easier to follow. See the `visual/` directory of our submission, and have fun watching our agents play off on boards of various dimensions!
+
+    usage: java -jar <jarname>.jar
+        jarname - 6_AgentFarrugiulian_AgentGreedy
+                    watch our agent (blue) play against a greedy agent (red) on a dimension 6 board
+                - 3_AgentFarrugiulian_AgentGreedy
+                    watch our agent (blue) play against a greedy agent (red) on a dimension 3 board
+                - 3_AgentFarrugiulian_AgentFarrugiulian
+                    watch our agent (blue) play against itself (red) on a dimension 3 board
     
+    OR
+
+    double click <jarname>.jar in a file explorer
+
+    Each time the jars are run, the agents are seeded with the System nanotime. This means you can get unlimited fun, watching them over and over again!
+
 Other Creative Aspects: Clever Ideas that Didn't Quite Work, and Why
-    
-    LEXICOGRAPHIC PRUNING
 
     While developing the mid-search over safe edges, we came to the realisation that the order in which safe edges are played makes no difference to the result of those edges being played; by nature of their definitions, safe edges do not capture any cells and therefore they do not change the game score, only the board layout. Safe edges may rule our other safe edges, but they do so in a symmetrical way in that the order that edges are played does not change which edges can be combined while all remaining safe.
 
@@ -151,20 +163,3 @@ Other Creative Aspects: Clever Ideas that Didn't Quite Work, and Why
     There's only one problem: this pruning strategy doesn't actually work! It's due to the nature of an adversarial search. The problem is that we have no way to re-evaluate paths at different points in the tree - for example if a minimising player at some node has a winning strategy that uses an out-of-order edge, and no other winning strategies, then EVEN if we eventually or previously evaluate this combination of edges to find out this fact, at the moment in the tree this minimising player will think they are our of options and may report a loss to the maximising player above, who will incorrectly see that as a win, and so forth. It's not enough to only evaluate each combination of edges only once; we also have to be able to retrieve these evaluations multiple times during a minimax search.
 
     One solution to this problem that would still improve our search performance is to store the evaluations of our pseudo-terminal states (with no remaining safe edges) and also nodes above them in the search tree in a 'transposition table'. We could populate the table whenever we encounter a combination for the first time, caching its result after running our evaluation search. Or, we could use a lexicographically-pruned state exploration search to generate all game states in advance (possibly not ideal overall, since win/lose pruning may render some of these searches unnecessary eventually anyway). The idea of using a transposition table to aid our mid-game search has a lot of merit. Even within the restrictive memory constraints on our submission, we could have potentially employed a caching strategy to use as much memory as possible during our searches.
-
-Other Creative Aspects: Other Approaches Considered
-
-    
-    - Monte Carlo - seems to be well suited for this style of game, MC for example has performed well in the similar game of GO - a high-branching factor, impartial, stage-based and control-based game
-
-    - Nims and Spage-Grundy theory
-
-    - Directions for machine learning - basically a linear evaluation function just isn't gonna cut it for this game
-
-Fun times:
-
-    Skype discussions and screenshots and paper and stuff (46 + 5 + 59 + 39 mins so far, plus 57 + 2:53, plus 1:28 + 1:27 + 11 + 3:34 + 46, plus 1:52 + 14 + ...)
-
-    'after we finished talking about 4-loops, julian was struggling with for-loops'
-
-    Independently both accidentally completing the midgame search function on the same morning.
