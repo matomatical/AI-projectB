@@ -202,8 +202,7 @@ edges in the search). A branching factor of 30 may seem unrealistically high,
 however in each ply the number of remaining safe moves is reduced by a number
 larger than 1, as most safe moves involve the reclassification of about two
 other moves as now unsafe. Therefore, the number of nodes in the search tree
-is not 30!, but closer to 30*27*24*21*...*3 (a triple factorial:
-https://en.wikipedia.org/wiki/Factorial#Double_factorial - slightly less than
+is not 30!, but closer to (30)(27)(24)(21)...(3) (a [triple factorial](https://en.wikipedia.org/wiki/Factorial#Double_factorial) - slightly less than
 the cube root of n!). Another result is that since the Agent's next turn is
 likely to start with a board with two safe edges having been played and
 therefore about 6 less safe edges, subsequent searches will have search trees
@@ -417,7 +416,7 @@ is O(n!!!) (triple factorial - (n)(n-3)(n-6)...(6)(3) - approximated by
 tree has a depth of roughly n/3. As a result, each path is roughly n/3 states
 long, and therefore has (n/3)! permutations, all occurring somewhere in the
 search tree. Only evaluating each of these permutations once therefore reduces
-the number of evaluations by a factor of $\frac{n}{3}!$ - an amazing improvement.
+the number of evaluations by a factor of (n/3)! - an amazing improvement.
 
 There's only one problem: this pruning strategy doesn't actually work! It's
 due to the nature of an adversarial search. The problem is that we have no way
