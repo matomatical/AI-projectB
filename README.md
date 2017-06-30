@@ -4,6 +4,35 @@
 
 #### Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>
 
+This repository contains our submission for the major project for COMP30024 Artificial Intelligence, semester 1, 2016.
+
+## About this project
+
+The project was marked out of 22, with points for code correctness and quality (8), performance against a series of benchmark agents (7), and overall creativity (7). We were awarded full marks. The distribution of marks for the cohort was as shown in the following diagram:
+
+     0 | 
+    ...|
+     7 | 
+     8 | *
+     9 | 
+    10 | ***
+    11 | ****
+    12 | ********
+    13 | *********
+    14 | ***********
+    15 | ********
+    16 | *******
+    17 | ***
+    18 | ** 
+    19 | *
+    20 | 
+    21 | 
+    22 | *  <--- this was us
+
+The rest of this readme consists of the `comments.txt` file we had to submit, describing the structure of our submission and the creative techniques we applied.
+
+## Comments file:
+
 Welcome to our submission. Here you will find a series of Java classes built
 for playing the best game of Hexifence you have seen in your life! Our
 solution is broken into a number of packages, and an even larger number of
@@ -34,8 +63,7 @@ We hope you can take the time to enjoy reading about the fun we have had with
 this project.
                                                                 Julian and Matt
 
-Structure of Solution
-=====================
+### Structure of Solution
 
 Our solution became a bit expansive as we extended our simple agents and board
 representation into its final form. It's made up of 8 packages; listed here in
@@ -105,15 +133,13 @@ AgentFarrugiulian.
     Some leftover classes adapted from Project Part A: for reading and 
     building boards based on specially-formatted ASCII input
 
-AgentFarrugiulian
-=================
+### AgentFarrugiulian
 
 Our Agent divides each game up into three stages - the opening stage, the mid-
 game stage, and the endgame stage. We will outline the approaches used in each
 stage, and the data structures used, below.
 
-Opening Strategy
-================
+### Opening Strategy
 
 In the opening stages of the game, our agent plays a random, safe move (unless
 there are cells available for capture)
@@ -137,10 +163,12 @@ arriving at for our final agent.
 
 The data structure works by maintaining four fast-access collections of empty (
 legal) Edges. The collections are:
+
     * free edges (capturing a cell)
     * capturing edges (capturing a cell and making another capture-able)
     * safe edges (don't make another cell capture-able)
     * sacrificing edges (make another cell capture-able)
+
 When a move is played, the EdgeSet is updated and kept accurate, considering 
 the consequences to all nearby Edges.
 
@@ -167,8 +195,7 @@ single underlying board (by restoring it to its original position as we unwind
 the recursive search algorithms), saving us from having to copy the board to
 generate new states - search transitions can happen in constant time!
 
-Mid-game Strategy
-=================
+### Mid-game Strategy
 
 We wouldn't get very far with an agent that makes random moves. Our aim during
 opening is actually to transition to the mid-game stage as early as possible,
@@ -228,8 +255,7 @@ practice. We can therefore quickly and accurately determine the expected
 winner from one of these states, as if we were using a static evaluation
 function, and drive the play towards these winning states.
 
-The FeatureSet Data Structure
-=============================
+### The FeatureSet Data Structure
 
 When there are no 'safe' moves remaining, it's useful to stop viewing the
 board as a set of legal edges, and begin to view it as a set of higher-order
@@ -276,8 +302,7 @@ implement (especially the requirement to keep it up to date with the placing
 and removal of edges throughout the whole game) would make a more complete
 mid-game and endgame search far more feasible.
 
-Endgame Strategy
-================
+### Endgame Strategy
 
 Our endgame strategy involves a small amount of narrow searching, followed by
 a purely heuristic play-out (branching factor 1) driven by many hours of
@@ -358,8 +383,7 @@ results in a very quick search, especially on boards of dimension 2 or 3.
 Therefore, though theoretically expensive, this search-based evaluation
 completes very quickly in practice.
 
-Other Creative Aspects: The Hexifence Visualisation Engine
-==========================================================
+### Other Creative Aspects: The Hexifence Visualisation Engine
 
 In addition to the classes that make up our submission, as we have mentioned
 we also created a visualisation engine using LibGDX. We have not included the
@@ -385,8 +409,7 @@ Or, if you still use a GUI, double click `<jarname>.jar` in a file explorer
 Each time the jars are run, the agents are seeded with the System nanotime.
 This means you can get unlimited fun, watching them over and over again!
 
-Other Creative Aspects: Clever Ideas that Didn't Quite Work, and Why
-====================================================================
+### Other Creative Aspects: Clever Ideas that Didn't Quite Work, and Why
 
 While developing the mid-search over safe edges, we came to the realisation
 that the order in which safe edges are played makes no difference to the
