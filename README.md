@@ -4,7 +4,7 @@
 
 #### Submission by: Julian Tran <juliant1> and Matt Farrugia <farrugiam>
 
-This repository contains our submission for the major project for COMP30024 Artificial Intelligence, semester 1, 2016.
+This repository contains our submission for the major project for COMP30024 Artificial Intelligence, semester 1, 2016. The project specification can be found under the `specification/` directory.
 
 ## About this project
 
@@ -149,8 +149,7 @@ as quickly as possible. It turns out creating a collection capable of
 supporting constant time access and removal of specific edges, and also
 constant time removal of a random edge, is not such a simple task.
 
-The EdgeSet Data Structure
-==========================
+### The EdgeSet Data Structure
 
 Our Agent achieves constant-time random moves by maintaining the first of our
 specialised data structures - the EdgeSet. This data structure is also used by
@@ -164,10 +163,10 @@ arriving at for our final agent.
 The data structure works by maintaining four fast-access collections of empty (
 legal) Edges. The collections are:
 
-    * free edges (capturing a cell)
-    * capturing edges (capturing a cell and making another capture-able)
-    * safe edges (don't make another cell capture-able)
-    * sacrificing edges (make another cell capture-able)
+* free edges (capturing a cell)
+* capturing edges (capturing a cell and making another capture-able)
+* safe edges (don't make another cell capture-able)
+* sacrificing edges (make another cell capture-able)
 
 When a move is played, the EdgeSet is updated and kept accurate, considering 
 the consequences to all nearby Edges.
