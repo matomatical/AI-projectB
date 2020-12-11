@@ -437,4 +437,14 @@ that as a win, and so forth. It's not enough to only evaluate each combination
 of edges only once; we also have to be able to retrieve these evaluations
 multiple times during a minimax search.
 
-One solution to this problem that would still improve our search performance is to store the evaluations of our pseudo-terminal states (with no remaining safe edges) and also nodes above them in the search tree in a 'transposition table'. We could populate the table whenever we encounter a combination for the first time, caching its result after running our evaluation search. Or, we could use a lexicographically-pruned state exploration search to generate all game states in advance (possibly not ideal overall, since win/lose pruning may render some of these searches unnecessary eventually anyway). The idea of using a transposition table to aid our mid-game search has a lot of merit. Even within the restrictive memory constraints on our submission, we could have potentially employed a caching strategy to use as much memory as possible during our searches.
+One solution to this problem that would still improve our search performance is
+to store the evaluations of our pseudo-terminal states (with no remaining safe
+edges) and also nodes above them in the search tree in a 'transposition table'.
+We could populate the table whenever we encounter a combination for the first
+time, caching its result after running our evaluation search. Or, we could use a
+lexicographically-pruned state exploration search to generate all game states in
+advance (possibly not ideal overall, since win/lose pruning may render some of
+these searches unnecessary eventually anyway). The idea of using a transposition
+table to aid our mid-game search has a lot of merit. Even within the restrictive
+memory constraints on our submission, we could have potentially employed a
+caching strategy to use as much memory as possible during our searches.
